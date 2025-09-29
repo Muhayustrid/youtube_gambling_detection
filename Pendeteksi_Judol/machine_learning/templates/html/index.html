@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <h1 class="text-center mb-4">Detektor Komentar Judol</h1>
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="comment" class="form-label">Masukkan komentar</label>
+              <textarea id="comment" name="comment" rows="4" class="form-control" placeholder="Tulis komentar di sini..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Deteksi</button>
+          </form>
+        </div>
+      </div>
+
+      {% if text %}
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <strong>Hasil Deteksi</strong>
+        </div>
+        <div class="card-body">
+          <p><b>Input:</b> {{ text }}</p>
+          <p><b>Clean:</b> <code>{{ clean }}</code></p>
+
+          <p>
+            <b>Prediksi:</b>
+            {% if proba >= 0.50 %}
+              <span class="badge bg-danger">Promosi Judol</span>
+            {% else %}
+              <span class="badge bg-success">Bukan Judol</span>
+            {% endif %}
+          </p>
+
+          <p><b>Probabilitas:</b></p>
+          <div class="progress" style="height: 25px;">
+            <div class="progress-bar {% if proba >= 0.50 %}bg-danger{% else %}bg-success{% endif %}" 
+                 role="progressbar" 
+                 style="width: {{ proba|floatformat:0 }}%;" 
+                 aria-valuenow="{{ proba|floatformat:0 }}" 
+                 aria-valuemin="0" aria-valuemax="100">
+              {{ proba|floatformat:2 }}%
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

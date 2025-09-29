@@ -1,4 +1,3 @@
-# myapp/ml/yt.py
 import os, re
 from urllib.parse import urlparse, parse_qs
 from googleapiclient.discovery import build
@@ -34,7 +33,6 @@ def fetch_all_comment_threads(video_id: str, max_total: int = 200):
             if not page_token:
                 break
     except HttpError as e:
-        # komentar bisa dinonaktifkan / video privat / quota habis
         if e.resp.status in (403, 404):
             return []
         raise
@@ -57,7 +55,7 @@ def fetch_all_replies(parent_id: str):
     return replies
 
 def collect_comments(link: str, limit: int = 100):
-    """Return: list[dict]  (lebih enak untuk Django daripada DataFrame)"""
+    """Return: list[dict]"""
     vid = extract_video_id(link)
     threads = fetch_all_comment_threads(vid, max_total=limit)
 
@@ -71,7 +69,7 @@ def collect_comments(link: str, limit: int = 100):
             "author": top.get("authorDisplayName"),
             "published_at": top.get("publishedAt"),
             "updated_at": top.get("updatedAt"),
-            "text": top.get("textDisplay") or "",   # raw
+            "text": top.get("textDisplay") or "",   
         })
 
         total_replies = th["snippet"].get("totalReplyCount", 0)
@@ -105,7 +103,7 @@ def collect_comments(link: str, limit: int = 100):
                         "text": rs.get("textDisplay") or "",
                     })
 
-    # potong jika melebihi limit
+    # jika melebihi limit
     if len(rows) > limit:
         rows = rows[:limit]
     return rows

@@ -1,13 +1,13 @@
 import sys
-sys.path.append(r'd:\Semester7\Skripsi\Project Judol Promotion Detection\Pendeteksi_Judol\machine_learning\ml')
+sys.path.append(r'D:\Semester7\Skripsi\Project Judol Promotion Detection\youtube_gambling_detection\Pendeteksi_Judol\machine_learning\ml\joblib')
 import joblib
 from scipy.sparse import hstack
-from preprosess import preprosesing
+from .preprosess import preprosesing
 
-# load artefak saat pertama kali
-word_vec = joblib.load(r"d:\Semester7\Skripsi\Project Judol Promotion Detection\Pendeteksi_Judol\machine_learning\ml\tfidf_word.pkl")
-char_vec = joblib.load(r"d:\Semester7\Skripsi\Project Judol Promotion Detection\Pendeteksi_Judol\machine_learning\ml\tfidf_char.pkl")
-clf = joblib.load(r"d:\Semester7\Skripsi\Project Judol Promotion Detection\Pendeteksi_Judol\machine_learning\ml\model_lr.pkl")
+# load artefak 
+word_vec = joblib.load(r"D:\Semester7\Skripsi\Project Judol Promotion Detection\youtube_gambling_detection\Pendeteksi_Judol\machine_learning\ml\joblib\tfidf_word.pkl")
+char_vec = joblib.load(r"D:\Semester7\Skripsi\Project Judol Promotion Detection\youtube_gambling_detection\Pendeteksi_Judol\machine_learning\ml\joblib\tfidf_char.pkl")
+clf = joblib.load(r"D:\Semester7\Skripsi\Project Judol Promotion Detection\youtube_gambling_detection\Pendeteksi_Judol\machine_learning\ml\joblib\model_lr.pkl")
 BEST_THR = 0.39
 
 def predict_comment(raw_text: str):
