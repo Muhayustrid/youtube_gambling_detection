@@ -33,4 +33,5 @@ def analyze(request):
                 "proba": pred["proba"],     
             })
         ctx.update({"url": url, "rows": results})
+        ctx["oauth_ok"] = bool(request.session.get("yt_creds")) 
     return render(request, "html/crawling_analyze.html", ctx)

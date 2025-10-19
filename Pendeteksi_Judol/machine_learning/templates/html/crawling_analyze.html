@@ -2,7 +2,16 @@
 {% load mathx %}
 {% block content %}
 <div class="container py-4">
-  <h1 class="mb-3">Judol Comment Detector</h1>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Judol Comment Detector</h1>
+    <div>
+      {% if oauth_ok %}
+        <span class="badge text-bg-success me-2">YouTube OAuth: Tersambung</span>
+      {% else %}
+        <a class="btn btn-outline-danger btn-sm" href="{% url 'oauth_start' %}">Login YouTube</a>
+      {% endif %}
+    </div>
+  </div>
 
   <form method="POST" class="row gy-2 gx-2 align-items-center mb-4">
     {% csrf_token %}
@@ -11,9 +20,9 @@
     </div>
     <div class="col-6 col-md-2">
       <select name="limit" class="form-select">
-        <option value="50">50</option>
-        <option value="100" selected>100</option>
-        <option value="200">200</option>
+        <option value="50"  {% if request.POST.limit == '50' %}selected{% endif %}>50</option>
+        <option value="100" {% if request.POST.limit|default:'100' == '100' %}selected{% endif %}>100</option>
+        <option value="200" {% if request.POST.limit == '200' %}selected{% endif %}>200</option>
       </select>
     </div>
     <div class="col-6 col-md-2">
@@ -27,65 +36,146 @@
         <span class="badge text-bg-danger">Judol</span>
         <span class="badge text-bg-success">Non</span>
       </div>
-      <div class="small text-muted">Klik header kolom untuk memilih teks.</div>
+      <div class="small text-muted">Centang beberapa komentar lalu pilih aksi di bawah tabel.</div>
     </div>
 
-    <div class="table-responsive shadow-sm">
-      <table class="table table-sm table-hover align-middle bg-white">
-        <thead class="table-light">
-          <tr>
-            <th style="min-width:80px">Level</th>
-            <th style="min-width:140px">Author</th>
-            <th style="min-width:360px">Comment</th>
-            <th style="min-width:360px">Clean</th>
-            <th style="min-width:110px">Prediksi</th>
-            <th style="min-width:140px">Probabilitas</th>
-            <th style="min-width:160px">Waktu</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for r in rows %}
-          {% with is_j=r.label %}
-          <tr class="{{ is_j|yesno:'judol,non' }}">
-            <td>{{ r.level|title }}</td>
-            <td>{{ r.author }}</td>
-            <td class="mono">{{ r.text }}</td>
-            <td class="mono">{{ r.text_clean }}</td>
-            <td>
-              {% if is_j %}
-                <span class="badge rounded-pill text-bg-danger">PROMOSI JUDOL</span>
-              {% else %}
-                <span class="badge rounded-pill text-bg-success">BUKAN</span>
-              {% endif %}
-            </td>
-            <td>
-              {% with pct=r.proba|floatformat:4 %}
-                {% comment %} ubah 0.123456 -> 12.3456% {% endcomment %}
-                {% with p100=r.proba|floatformat:4 %}
-                  <div class="d-flex align-items-center gap-2">
-                    <div class="progress flex-grow-1" role="progressbar"
-                         aria-valuemin="0" aria-valuemax="100"
-                         aria-valuenow="{{ r.proba|floatformat:4|floatformat }}">
-                      <div class="progress-bar {% if is_j %}bg-danger{% endif %}"
-                           style="width: {{ r.proba|floatformat:4|floatformat|add:'0'|floatformat|floatformat }}%">
-                      </div>
-                    </div>
-                    <div class="text-nowrap">
-                      {{ r.proba|mul:100|floatformat:2 }}%
+    {# --- FORM AKSI MODERASI --- #}
+    <form method="POST" action="{% url 'moderate_comments' %}" id="modForm" class="mb-3">
+      {% csrf_token %}
+      <input type="hidden" name="action" id="modAction" value="reject">
+
+      <div class="table-responsive shadow-sm">
+        <table class="table table-sm table-hover align-middle bg-white">
+          <thead class="table-light">
+            <tr>
+              <th style="width:36px">
+                <input type="checkbox" id="chkAll" />
+              </th>
+              <th style="min-width:80px">Level</th>
+              <th style="min-width:140px">Author</th>
+              <th style="min-width:360px">Comment</th>
+              <th style="min-width:360px">Clean</th>
+              <th style="min-width:110px">Prediksi</th>
+              <th style="min-width:160px">Probabilitas</th>
+              <th style="min-width:160px">Waktu</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+            {% with is_j=r.label %}
+            <tr class="{{ is_j|yesno:'judol,non' }}">
+              <td>
+                <input type="checkbox" name="comment_id" value="{{ r.comment_id }}" class="rowChk" />
+              </td>
+              <td>{{ r.level|title }}</td>
+              <td>{{ r.author }}</td>
+              <td class="mono">{{ r.text }}</td>
+              <td class="mono">{{ r.text_clean }}</td>
+              <td>
+                {% if is_j %}
+                  <span class="badge rounded-pill text-bg-danger">PROMOSI JUDOL</span>
+                {% else %}
+                  <span class="badge rounded-pill text-bg-success">BUKAN</span>
+                {% endif %}
+              </td>
+              <td>
+                {# tampilkan progress bar + persen yang rapi #}
+                <div class="d-flex align-items-center gap-2">
+                  <div class="progress flex-grow-1" role="progressbar"
+                       aria-valuemin="0" aria-valuemax="100"
+                       aria-valuenow="{{ r.proba|mul:100|floatformat:2 }}">
+                    <div class="progress-bar {% if is_j %}bg-danger{% else %}bg-success{% endif %}"
+                         style="width: {{ r.proba|mul:100|floatformat:2 }}%">
                     </div>
                   </div>
-                {% endwith %}
-              {% endwith %}
-            </td>
-            <td><span class="text-muted small">{{ r.published_at }}</span></td>
-          </tr>
-          {% endwith %}
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+                  <div class="text-nowrap">
+                    {{ r.proba|mul:100|floatformat:2 }}%
+                  </div>
+                </div>
+              </td>
+              <td><span class="text-muted small">{{ r.published_at }}</span></td>
+            </tr>
+            {% endwith %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-warning"
+                onclick="document.getElementById('modAction').value='reject'"
+                {% if not oauth_ok %}disabled title="Login YouTube dulu"{% endif %}>
+          Reject
+        </button>
+        <!-- <button type="submit" class="btn btn-danger"
+                onclick="document.getElementById('modAction').value='delete'"
+                {% if not oauth_ok %}disabled title="Login YouTube dulu"{% endif %}>
+          Delete yang dipilih
+        </button> -->
+        {% if not oauth_ok %}
+          <a class="btn btn-outline-danger" href="{% url 'oauth_start' %}">Login YouTube untuk moderasi</a>
+        {% endif %}
+      </div>
+    </form>
   {% else %}
     <div class="alert alert-info">Tempel link video YouTube lalu klik <b>Analisis</b>.</div>
   {% endif %}
 </div>
+
+<script>
+  // select-all
+  
+  (function () {
+    const all = document.getElementById('chkAll');
+    if (!all) return;
+    all.addEventListener('change', function() {
+      document.querySelectorAll('.rowChk').forEach(cb => { cb.checked = all.checked; });
+    });
+  })();
+
+    // select-all
+  (function () {
+    const all = document.getElementById('chkAll');
+    if (!all) return;
+    all.addEventListener('change', function() {
+      document.querySelectorAll('.rowChk').forEach(cb => { cb.checked = all.checked; });
+    });
+  })();
+
+  // sorting table
+  (function () {
+    const table = document.querySelector("table");
+    if (!table) return;
+
+    table.querySelectorAll("th").forEach((th, colIndex) => {
+      // skip kolom checkbox
+      if (colIndex === 0) return;
+
+      th.style.cursor = "pointer";
+      let asc = true;
+
+      th.addEventListener("click", () => {
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        rows.sort((a, b) => {
+          const A = a.children[colIndex].innerText.trim();
+          const B = b.children[colIndex].innerText.trim();
+
+          // cek angka atau teks
+          const numA = parseFloat(A.replace("%", "")) || A.toLowerCase();
+          const numB = parseFloat(B.replace("%", "")) || B.toLowerCase();
+
+          if (numA < numB) return asc ? -1 : 1;
+          if (numA > numB) return asc ? 1 : -1;
+          return 0;
+        });
+
+        // hapus baris lama dan masukkan baris baru
+        rows.forEach(r => tbody.appendChild(r));
+        asc = !asc; // toggle asc/desc
+      });
+    });
+  })();
+</script>
 {% endblock %}

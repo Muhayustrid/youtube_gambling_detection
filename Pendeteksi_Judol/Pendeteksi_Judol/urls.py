@@ -17,9 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from machine_learning import views
+from akun.views_oauth import oauth_start, oauth_callback
+from akun.views_moderate import moderate_comments
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
-    path('analyze/', views.analyze, name='analyze')
+    path('comment-analysis/', views.analyze, name='analyze'),
+    path("oauth/start/", oauth_start, name="oauth_start"),
+    path("oauth/callback/", oauth_callback, name="oauth_callback"),
+    path("moderate/", moderate_comments, name="moderate_comments"),
 ]
