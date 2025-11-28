@@ -1,5 +1,3 @@
-from django.shortcuts import render
-
 # Create your views here.
 from django.shortcuts import render
 from .ml.predict import predict_comment
@@ -17,7 +15,12 @@ def home(request):
     return render(request, "html/index.html", context)
 
 def analyze(request):
-    ctx = {}
+    yt_creds = request.session.get("yt_creds")
+    oauth_ok = yt_creds is not None
+    ctx = {
+        "oauth_ok": oauth_ok,
+        "yt_user": yt_creds.get("user") if yt_creds else None,
+    }
     if request.method == "POST":
         url   = (request.POST.get("url") or "").strip()
         limit = int(request.POST.get("limit") or 100)
@@ -32,6 +35,7 @@ def analyze(request):
                 "label": pred["label"],     
                 "proba": pred["proba"],     
             })
-        ctx.update({"url": url, "rows": results})
-        ctx["oauth_ok"] = bool(request.session.get("yt_creds")) 
+
+        ctx.update({"url": url, "rows": results, })
+        # ctx["oauth_ok"] = bool(request.session.get("yt_creds")) 
     return render(request, "html/crawling_analyze.html", ctx)

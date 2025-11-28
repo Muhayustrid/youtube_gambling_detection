@@ -3,6 +3,8 @@ from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
 from google_auth_oauthlib.flow import Flow
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -35,6 +37,28 @@ def oauth_callback(request):
     flow.fetch_token(authorization_response=request.build_absolute_uri())
 
     creds = flow.credentials
+
+    user_info = {
+        "name": "YouTube User",
+        "avatar": "",
+    }
+
+    try:
+        youtube = build("youtube", "v3", credentials=creds)
+        channel_response = youtube.channels().list(
+            part="snippet",
+            mine=True
+        ).execute()
+        
+        if channel_response.get("items"):
+            channel = channel_response["items"][0]["snippet"]
+            user_info = {
+                "name": channel.get("title", "YouTube User"),
+                "avatar": channel.get("thumbnails", {}).get("default", {}).get("url", ""),
+            }
+    except Exception as e:
+        print(f"Error fetching YouTube user info: {e}")
+
     request.session["yt_creds"] = {
         "token": creds.token,
         "refresh_token": creds.refresh_token,
@@ -42,5 +66,6 @@ def oauth_callback(request):
         "client_id": creds.client_id,
         "client_secret": creds.client_secret,
         "scopes": creds.scopes,
+        "user": user_info,  
     }
-    return redirect("comment-analysis/")
+    return redirect("analyze")

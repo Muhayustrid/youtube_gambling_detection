@@ -1,0 +1,38 @@
+{
+    "id": "gen-1764151377-sW3xEkmfQLQkzz7VOpYY",
+    "provider": "xAI",
+    "model": "x-ai/grok-4.1-fast:free",
+    "object": "chat.completion",
+    "created": 1764151377,
+    "choices": [
+        {
+            "logprobs": null,
+            "finish_reason": "stop",
+            "native_finish_reason": "completed",
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "### Apa Itu Algoritma Greedy?\n\nAlgoritma **greedy** (atau algoritma tamak) adalah salah satu pendekatan dalam pemrograman dan ilmu komputer untuk menyelesaikan masalah **optimasi**. Ide dasarnya adalah **pada setiap langkah, kita selalu memilih pilihan yang tampak paling menguntungkan atau optimal secara **lokal** (saat itu juga), dengan harapan bahwa pilihan-pilihan lokal ini akan menghasilkan solusi yang optimal secara **global** (keseluruhan).\n\n#### Cara Kerja Algoritma Greedy\n1. **Pilih elemen terbaik saat ini**: Dari semua opsi yang tersedia, ambil yang paling baik berdasarkan kriteria tertentu (misalnya, terbesar, terkecil, atau paling dekat).\n2. **Ulangi hingga selesai**: Lakukan langkah ini berulang kali sampai masalah teratasi.\n3. **Tidak mundur**: Sekali pilihan dibuat, tidak ada penyesuaian atau \"undo\" – ini beda dengan algoritma lain seperti backtracking atau dynamic programming.\n\nAlgoritma ini mirip seperti orang yang **tamak**: ambil yang terlihat enak dulu tanpa mikir panjang.\n\n#### Contoh Sederhana\n**Masalah Perubahan Uang (Coin Change)**:\n- Kamu punya koin denominasi: 1, 5, 10, 25.\n- Mau bayar Rp 30.\n- Greedy: Ambil 25 (terbesar), sisanya 5 → 1 koin 25 + 1 koin 5 = **2 koin**.\n- Hasil optimal! (Tapi kadang greedy gagal, misal jika koin 4 & 3 untuk 6: greedy ambil 4+1+1=3 koin, padahal 3+3=2 koin).\n\n**Contoh Lain**:\n- **Dijkstra's Algorithm**: Cari jalan terpendek di graf, selalu pilih simpul terdekat dulu.\n- **Huffman Coding**: Kompresi data, prioritaskan huruf sering muncul.\n- **Fractional Knapsack**: Isi tas dengan barang bernilai tinggi per berat (bukan 0/1 knapsack yang greedy gagal).\n\n#### Kapan Digunakan?\n- Saat masalah punya **properti greedy choice** (pilihan lokal aman untuk global) dan **optimal substructure** (sub-masalah optimal menyusun solusi besar).\n- Cocok untuk masalah seperti minimum spanning tree (Kruskal/Prim), activity selection, dll.\n\n#### Kelebihan\n- **Cepat**: Biasanya O(n log n) atau lebih rendah.\n- **Sederhana**: Mudah diimplementasikan.\n\n#### Kekurangan\n- **Tidak selalu optimal**: Bisa gagal (lihat coin change di atas).\n- Perlu **bukti matematis** bahwa greedy benar untuk masalah itu.\n\n#### Kode Contoh Sederhana (Python) - Activity Selection\n```python\ndef greedy_activity_selection(activities):\n    # activities = [(start, end), ...] diurutkan berdasarkan end time\n    activities.sort(key=lambda x: x[1])  # Greedy: pilih yang end paling awal\n    selected = [activities[0]]\n    last_end = activities[0][1]\n    for start, end in activities[1:]:\n        if start >= last_end:\n            selected.append((start, end))\n            last_end = end\n    return selected\n\n# Contoh: activities = [(1,4), (3,5), (0,6), (5,7), (3,9), (5,9), (6,10), (8,11), (8,12), (2,14), (12,16)]\n# Output: [(1,4), (5,7), (8,11), (12,16)] → Maksimal aktivitas tanpa tumpang tindih\n```\n\nKalau kamu punya contoh masalah spesifik atau mau kode lebih detail, bilang aja ya! 😊 Ini dasar banget, tapi greedy sering dipake di interview coding.",
+                "refusal": null,
+                "reasoning": null,
+                "reasoning_details": [
+                    {
+                        "id": "rs_541ebc3d-645b-ab2d-0075-c217f56fafc6",
+                        "format": "xai-responses-v1",
+                        "index": 0,
+                        "type": "reasoning.encrypted",
+                        "data": "eM7HrEJUHINd8NOazawISQmdNori/6httixLZ1+TCeLCeTs0+cmrsXzFgnSwWiLRHxOkUZJ4I81ty1oo++HaYFpUmoSijnlwAMGOdtYBpf6uFhCPZCJwNeJO5qY1yb/EGsPuxyggnIHd/q1XP5UIOhWU2OGc69i88zjI7cMSfTc0b88LkGSkmCFe2UqL8VcJ+fwRBQNTcx4M2BqDpz2XcDF0p8YYt2UuteYS/QGbfci4Xm/EsDCnax24hThD0k2viqEX6Dn6pJ/FT/jJhHdW2pkTuBn7rG/cBzv1i8eOBZSDZ2xFqBHWw18kLNWSuX38FJ6CoWFU+egz+yHZMbVQ5UXMQcHBgmWDbFHm3P5JNBz0nCuvukQKBTvxQlQYQ/j8MqmVeLjbq7yXKJvVRC8PGPpTYpp2pF5YFWArviJaTDPqxDzkXJN5uSN/L54yzzTPq4Ouc8VfzPqYGzjX0pU0PeXjNu5zw2LyCtp3rZT6CX4sJDd1U/OE4Y/nWJloFudZQLAmhLyA3HHbEo1k3cLhErZBo9RUNVtgzskVg5JLn/NIpL8fAH4ah2mKOyzIa9iqvIW6bhRSFdk73e25/WJPL+4yIVmgvgZ1pL8ho150ML02HnTuFuvZA0QNugEzjRk1wmpMCvWpXuOs7yVI35K9D0Xj6AmYlDoTjQPaFAFgT51b9FgBetVe+V9rF2DK9Y6kvKWAdogH0C/JM4u+4Mbt/ME4GviX1FphMyfQCnKYLWGjsxJ/4LJqHtfoNQy9MEdUKXsLkLejbA+WKsL6jrDEuk41/PtjU0EC/XjZchNVFv4hpan9+5MFg4PN//qkpl0eKr55t3uYILRiK43Ze8Tfhpw7IkbxvCsU9FELM/RCdiBzumFMncfQXx4CrxBfX5+daHuuhNEteG1yBGPbWOxXYHU1F00KAqMJO6dtSvCxCOIEmO01wcPO38YRJ9bnDNO9x9Sbzpeg2kIPaHqDkNsudG1uvWQJZPq7VNU7rSpFu/+8tgQtAo2MdZdKevG94w2fX4JLOayKDLjSJ4bOZQnVIuFPDBOBVkn3sg+FgP5n04quM0btqJE2HefLzBUnQLZiRUMhCMOwquDgJGt8s9bOsSex/pK6znjqhm6uCdAcrOpLSu/o/BfE+Amd5qT2Kk3GxJuW/3+ZQu72ddOJmjaNx+wZEaSAGNlXeSCHsyUXll1z548Ltsbgkq7jNKTASot57tzgIFHb+C1EE134FI8Uf2hvh7b6A9aE0mr/2u/1bf5Y9HnwTZzmtr692K3XxIxkSe3ey2QiIwWLpBmqMQubxmsXbtxaZf+4PIcEx8jB2ZNGjW3Qnsjjm8UdsJ4Xbmv0pu/YJjf4Z1ksrTopJdd6m2PLBtaNwyjwLEV6vLbkJnWa6XFZFocfuvwZB+/Lg+DnkE6pComsVE5L15ibr7JJR69IQYkTeE3iY8IEdpZZjKokdSdIafPw2j7TmtPBOG2jUkgTEvqaPnmmynNiVsk"
+                    }
+                ]
+            }
+        }
+    ],
+    "usage": {
+        "prompt_tokens": 165,
+        "completion_tokens": 1176,
+        "total_tokens": 1341,
+        "completion_tokens_details": {
+            "reasoning_tokens": 280
+        }
+    }
+}

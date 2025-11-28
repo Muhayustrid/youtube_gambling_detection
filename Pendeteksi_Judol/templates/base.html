@@ -1,96 +1,462 @@
 <!doctype html>
 <html lang="id">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Judol Comment Detector</title>
+  <title>JudiGuard - Deteksi Promosi Judi Online di Komentar YouTube</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=account_circle" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
   <style>
-    .table td {
-      vertical-align: top;
+    body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+    .navbar { background: linear-gradient(135deg, #667eea, #764ba2); box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+    .hero-section { padding: 60px 0 48px; background: linear-gradient(to bottom, #764ba2, #667eea); color: white; }
+    .hero-section .lead { opacity: 0.95; }
+
+    /* Input & Button Styling */
+    .analyze-wrap {
+      max-width: 920px;
+      margin: 0 auto;
     }
 
-    .judol {
-      background: #fff5f5;
+    .url-input-card {
+      background: rgba(255,255,255,0.98);
+      border-radius: 14px;
+      padding: 10px;
+      box-shadow: 0 12px 30px rgba(20,20,30,0.06);
+      display: flex;
+      gap: 10px;
+      align-items: center;
     }
 
-    .non {
-      background: #f6ffed;
+    .url-input {
+      flex: 1 1 auto;
+      border: none;
+      height: 56px;
+      padding: 0 18px;
+      border-radius: 10px;
+      font-size: 1rem;
+      box-shadow: none;
+      outline: none;
+      background: #ffffff;
     }
 
+    .url-input::placeholder { color: #9aa3b2; }
+
+    .limit-select {
+      width: 120px;
+      height: 56px;
+      border: none;
+      padding: 0 12px;
+      border-radius: 10px;
+      background: #fff;
+      font-weight: 600;
+      box-shadow: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .select-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    .select-wrapper .fa-caret-down {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #6c757d;
+    }
+
+    .analyze-btn {
+      display: block;
+      margin: 18px auto 0;
+      width: 360px;
+      max-width: 92%;
+      height: 58px;
+      border-radius: 999px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(116, 66, 162, 0.18);
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .analyze-btn:active { transform: translateY(1px); }
+    .analyze-btn:hover { box-shadow: 0 14px 36px rgba(116,66,162,0.22); }
+
+    @media (max-width: 576px) {
+      .url-input { height: 50px; padding: 0 14px; font-size: 0.95rem; }
+      .limit-select { width: 110px; height: 50px; }
+      .analyze-btn { height: 52px; font-size: 1rem; width: 100%; border-radius: 12px; }
+      .url-input-card { padding: 8px; gap: 8px; }
+    }
+
+    /* Table Styling */
+    .table-container { background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; }
+    .prediction-judi { background-color: #ffebee !important; }
+    .prediction-bersih { background-color: #e8f5e9 !important; }
+    
     .mono {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: .95rem;
     }
 
-    footer {
-      margin-top: 3rem;
+    /* Loading Overlay */
+    .loading-overlay {
+      display: none; 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%;
+      background: rgba(0,0,0,0.75); 
+      z-index: 9999; 
+      justify-content: center; 
+      align-items: center;
+      flex-direction: column; 
+      color: white; 
+      font-size: 1.5rem;
     }
 
-    .navbar-brand {
-      font-weight: bold;
-    }
-
-    .profile-img {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      object-fit: cover;
-      cursor: pointer;
+    /* OAuth Badge */
+    .oauth-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
     }
   </style>
 </head>
+<body>
 
-<body class="bg-light d-flex flex-column min-vh-100">
-
-  <!-- navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-    <div class="container">
-      <a class="navbar-brand" href="{% url 'home' %}">Judol Detector</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
-        aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold fs-4" href="#"><i class="fab fa-youtube text-danger"></i> JudiGuard</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
-
-      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav me-auto">
-          <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
-            href="{% url 'home' %}">Home</a>
-          <a class="nav-link {% if request.resolver_match.url_name == 'analyze' %}active{% endif %}"
-            href="{% url 'analyze' %}">Analisis Komentar</a>
-        </div>
-        <!-- kanan: profile / login -->
-        <div class="d-flex align-items-center">
-          <a href="#">
-            <span class="material-symbols-outlined">
-              account_circle
-            </span>
-          </a>
-        </div>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <!-- OAuth Status Badge -->
+          <li class="nav-item me-3">
+            {% if oauth_ok %}
+              <span class="oauth-badge bg-success text-white">
+                <i class="fas fa-check-circle"></i> YouTube Tersambung
+              </span>
+            {% else %}
+              <a class="oauth-badge bg-danger text-white text-decoration-none" href="{% url 'oauth_start' %}">
+                <i class="fas fa-exclamation-circle"></i> Login YouTube
+              </a>
+            {% endif %}
+          </li>
+          
+          <!-- User Dropdown -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" role="button" data-bs-toggle="dropdown">
+              {% if yt_user and yt_user.avatar %}
+                <img src="{{ yt_user.avatar }}" class="rounded-circle me-2" width="32" height="32" alt="Avatar">
+              {% else %}
+                <i class="fas fa-user-circle fs-4 me-2"></i>
+              {% endif %}
+              <span>{{ yt_user.name|default:"Guest" }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profil Saya</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+            </ul>
+          </li>
+        </ul>
       </div>
     </div>
   </nav>
-  <!-- end_navbar -->
 
-  <!-- konten -->
-  <main class="flex-fill">
-    {% block content %}
-    {% endblock %}
-  </main>
-  <!-- end_konten -->
+ {% block content %}
+ {% endblock %}
 
-  <!-- footer -->
-  <footer class="bg-light text-muted py-3 mt-auto border-top">
+  <!-- Footer -->
+  <footer class="bg-light text-muted py-3 mt-5 border-top">
     <div class="container text-center">
-      <small>&copy; 2025 Judol Comment Detector</small>
+      <small>&copy; 2025 JudiGuard - Judol Comment Detector</small>
     </div>
   </footer>
-  <!--end_footer -->
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+  <script>
+    // Show loading on form submit
+    document.getElementById('analyzeForm').addEventListener('submit', function(e) {
+      const url = document.getElementById('youtubeUrl').value.trim();
+      if (url) {
+        document.getElementById('loading').style.display = 'flex';
+      }
+    });
 
+    // Calculate statistics
+    {% if rows %}
+    (function() {
+      const rows = document.querySelectorAll('#commentsTable tbody tr');
+      let judiCount = 0;
+      let cleanCount = 0;
+      
+      rows.forEach(row => {
+        if (row.dataset.prediction === 'judi') {
+          judiCount++;
+        } else {
+          cleanCount++;
+        }
+      });
+      
+      document.getElementById('judiCount').textContent = judiCount.toLocaleString('id-ID');
+      document.getElementById('cleanCount').textContent = cleanCount.toLocaleString('id-ID');
+    })();
+    {% endif %}
+
+    // Filter functionality
+    document.getElementById('filterPrediction')?.addEventListener('change', function() {
+      const filter = this.value;
+      const rows = document.querySelectorAll('#commentsTable tbody tr');
+      
+      rows.forEach(row => {
+        if (filter === 'all') {
+          row.style.display = '';
+        } else if (filter === row.dataset.prediction) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+
+    // Select all functionality
+    document.getElementById('selectAll')?.addEventListener('change', function() {
+      const checkboxes = document.querySelectorAll('.row-check');
+      checkboxes.forEach(cb => {
+        if (cb.closest('tr').style.display !== 'none') {
+          cb.checked = this.checked;
+        }
+      });
+      updateDeleteButton();
+    });
+
+    // Update delete button
+    function updateDeleteButton() {
+      const checked = document.querySelectorAll('.row-check:checked').length;
+      const btn = document.getElementById('deleteSelected');
+      if (btn) {
+        btn.disabled = checked === 0 || !{{ oauth_ok|yesno:'true,false' }};
+        btn.innerHTML = checked > 0 
+          ? `<i class="fas fa-trash"></i> Hapus Terpilih (${checked})` 
+          : `<i class="fas fa-trash"></i> Hapus Terpilih`;
+      }
+    }
+
+    document.querySelectorAll('.row-check').forEach(cb => {
+      cb.addEventListener('change', updateDeleteButton);
+    });
+
+    // Delete selected functionality (AJAX)
+    document.getElementById('deleteSelected')?.addEventListener('click', async function(e) {
+      e.preventDefault(); 
+      
+      if (!{{ oauth_ok|yesno:'true,false' }}) {
+        showNotification('Silakan login YouTube terlebih dahulu untuk melakukan moderasi.', 'warning');
+        return;
+      }
+      
+      const checkedBoxes = document.querySelectorAll('.row-check:checked');
+      const checked = checkedBoxes.length;
+      
+      if (checked === 0) {
+        showNotification('Pilih minimal 1 komentar untuk dihapus.', 'warning');
+        return;
+      }
+      
+      if (confirm(`Hapus ${checked} komentar yang dipilih?`)) {
+        // Show loading
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghapus...';
+        
+        const formData = new FormData();
+        formData.append('action', 'reject');
+        
+        // Ambil CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        formData.append('csrfmiddlewaretoken', csrfToken);
+        
+        // Tambahkan semua comment_id
+        checkedBoxes.forEach(cb => {
+          formData.append('comment_id', cb.value);
+        });
+        
+        try {
+          const response = await fetch('{% url "moderate_comments" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          });
+          
+          const result = await response.json();
+          
+          if (result.ok) {
+            // Hapus row dari tabel
+            checkedBoxes.forEach(cb => {
+              cb.closest('tr').remove();
+            });
+            
+            // Update stats
+            const remainingRows = document.querySelectorAll('#commentsTable tbody tr');
+            if (remainingRows.length === 0) {
+              document.getElementById('statsSummary').style.display = 'none';
+              document.querySelector('.table-container .table-responsive').outerHTML = `
+                <div class="text-center text-muted py-5" id="emptyState">
+                  <i class="fas fa-inbox fa-4x mb-4 opacity-50"></i>
+                  <h5>Semua komentar telah dihapus</h5>
+                  <p>Masukkan URL video YouTube dan klik Analisis untuk memulai lagi.</p>
+                </div>
+              `;
+            } else {
+              // Recalculate stats
+              let judiCount = 0, cleanCount = 0;
+              remainingRows.forEach(row => {
+                if (row.dataset.prediction === 'judi') judiCount++;
+                else cleanCount++;
+              });
+              document.getElementById('totalComments').textContent = remainingRows.length;
+              document.getElementById('judiCount').textContent = judiCount;
+              document.getElementById('cleanCount').textContent = cleanCount;
+            }
+            
+            const selectAllCheckbox = document.getElementById('selectAll');
+            if (selectAllCheckbox) selectAllCheckbox.checked = false;
+            updateDeleteButton();
+            
+            showNotification(`Berhasil menghapus ${result.count} komentar!`, 'success');
+          } else {
+            // Handle different error types
+            let errorIcon = 'exclamation-triangle';
+            let errorType = 'danger';
+            
+            if (result.error_type === 'no_permission') {
+              errorIcon = 'lock';
+              errorType = 'warning';
+            } else if (result.error_type === 'auth') {
+              errorIcon = 'user-slash';
+              errorType = 'warning';
+            }
+            
+            showNotification(result.msg, errorType, errorIcon);
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          showNotification('Terjadi kesalahan saat menghapus komentar. Silakan coba lagi.', 'danger');
+        } finally {
+          // Reset button
+          this.disabled = false;
+          updateDeleteButton();
+        }
+      }
+    });
+    
+    // Function untuk show notification
+    function showNotification(message, type = 'info', icon = null) {
+      // Remove existing notification
+      const existing = document.querySelector('.custom-notification');
+      if (existing) existing.remove();
+      
+      // Icon mapping
+      const iconMap = {
+        'success': 'check-circle',
+        'danger': 'exclamation-circle',
+        'warning': 'exclamation-triangle',
+        'info': 'info-circle'
+      };
+      
+      const iconClass = icon || iconMap[type] || 'info-circle';
+      
+      // Create notification
+      const notification = document.createElement('div');
+      notification.className = `custom-notification alert alert-${type} alert-dismissible fade show`;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        min-width: 300px;
+        max-width: 500px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      `;
+      notification.innerHTML = `
+        <i class="fas fa-${iconClass} me-2"></i>
+        <strong>${message}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      
+      document.body.appendChild(notification);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 150);
+      }, 5000);
+    }
+
+    // Export CSV functionality
+    document.getElementById('exportCsv')?.addEventListener('click', function() {
+      const rows = document.querySelectorAll('#commentsTable tbody tr');
+      let csv = 'Level,Username,Komentar,Komentar Bersih,Prediksi,Probabilitas,Waktu\n';
+      
+      rows.forEach(row => {
+        if (row.style.display !== 'none') {
+          const cells = row.querySelectorAll('td');
+          const level = cells[1].textContent.trim();
+          const username = cells[2].textContent.trim();
+          const comment = cells[3].textContent.trim().replace(/"/g, '""');
+          const clean = cells[4].textContent.trim().replace(/"/g, '""');
+          const prediction = cells[5].textContent.trim();
+          const probability = cells[6].querySelector('.text-nowrap').textContent.trim();
+          const time = cells[7].textContent.trim();
+          
+          csv += `"${level}","${username}","${comment}","${clean}","${prediction}","${probability}","${time}"\n`;
+        }
+      });
+      
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'deteksi_judi_youtube_' + new Date().getTime() + '.csv';
+      link.click();
+    });
+
+    // Table sorting (keep existing functionality)
+    (function () {
+      const table = document.querySelector("#commentsTable");
+      if (!table) return;
+      table.querySelectorAll("th").forEach((th, colIndex) => {
+        if (colIndex === 0) return;
+        th.style.cursor = "pointer";
+        let asc = true;
+        th.addEventListener("click", () => {
+          const tbody = table.querySelector("tbody");
+          const rows = Array.from(tbody.querySelectorAll("tr"));
+          rows.sort((a, b) => {
+            const A = a.children[colIndex].innerText.trim();
+            const B = b.children[colIndex].innerText.trim();
+            const numA = parseFloat(A.replace("%", "")) || A.toLowerCase();
+            const numB = parseFloat(B.replace("%", "")) || B.toLowerCase();
+            if (numA < numB) return asc ? -1 : 1;
+            if (numA > numB) return asc ? 1 : -1;
+            return 0;
+          });
+          rows.forEach(r => tbody.appendChild(r));
+          asc = !asc;
+        });
+      });
+    })();
+  </script>
+</body>
 </html>

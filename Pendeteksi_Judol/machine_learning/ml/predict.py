@@ -3,8 +3,6 @@ from pathlib import Path
 from threading import Lock
 import joblib
 
-# Jika pipeline-mu SUDAH menyertakan preprocessing di dalam TfidfVectorizer,
-# set ke False. Jika perlu cleaning manual, set True dan sediakan fungsi-nya.
 USE_PREPROCESS = True
 BEST_THR = 0.50
 
@@ -14,7 +12,6 @@ _lock = Lock()
 _PIPE = None
 
 if USE_PREPROCESS:
-    # sesuaikan path modulmu
     from .preprosess import preprosesing
 
 def _lazy_load():

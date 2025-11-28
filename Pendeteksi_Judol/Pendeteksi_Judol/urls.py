@@ -19,6 +19,7 @@ from django.urls import path, include
 from machine_learning import views
 from akun.views_oauth import oauth_start, oauth_callback
 from akun.views_moderate import moderate_comments
+from akun.views import revoke_and_logout_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,4 +28,5 @@ urlpatterns = [
     path("oauth/start/", oauth_start, name="oauth_start"),
     path("oauth/callback/", oauth_callback, name="oauth_callback"),
     path("moderate/", moderate_comments, name="moderate_comments"),
+    path("logout/", revoke_and_logout_view, name="logout_view")
 ]

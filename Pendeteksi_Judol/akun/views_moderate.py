@@ -17,6 +17,9 @@ def _svc_from_session(request):
     )
     return build("youtube", "v3", credentials=creds)
 
+from googleapiclient.errors import HttpError
+from django.conf import settings
+
 def moderate_comments(request):
     if request.method != "POST":
         return HttpResponseForbidden("POST only")
@@ -24,8 +27,13 @@ def moderate_comments(request):
     comment_ids = request.POST.getlist("comment_id")
     action = request.POST.get("action")  
     svc = _svc_from_session(request)
+    
     if not svc:
-        return JsonResponse({"ok": False, "msg": "Belum login OAuth"}, status=401)
+        return JsonResponse({
+            "ok": False, 
+            "msg": "Belum login OAuth",
+            "error_type": "auth"
+        }, status=401)
 
     try:
         if action == "delete":
@@ -38,8 +46,47 @@ def moderate_comments(request):
                 banAuthor=False
             ).execute()
         else:
-            return JsonResponse({"ok": False, "msg": "Aksi tidak dikenal"}, status=400)
-        # return JsonResponse({"ok": True, "count": len(comment_ids)})
-        return redirect('analyze')
+            return JsonResponse({
+                "ok": False, 
+                "msg": "Aksi tidak dikenal",
+                "error_type": "invalid_action"
+            }, status=400)
+            
+        return JsonResponse({
+            "ok": True, 
+            "count": len(comment_ids),
+            "msg": f"Berhasil menghapus {len(comment_ids)} komentar"
+        })
+        
+    except HttpError as e:
+        # ✅ Handle YouTube API Error
+        error_details = e.error_details[0] if e.error_details else {}
+        reason = error_details.get('reason', 'unknown')
+        
+        # Pesan error 
+        if reason == 'processingFailure':
+            msg = "Anda tidak memiliki izin untuk moderasi komentar di video ini. Pastikan Anda adalah pemilik channel/video."
+            error_type = "no_permission"
+        elif reason == 'forbidden':
+            msg = "Akses ditolak. Anda tidak memiliki izin untuk melakukan moderasi."
+            error_type = "forbidden"
+        elif reason == 'commentNotFound':
+            msg = "Komentar tidak ditemukan atau sudah dihapus."
+            error_type = "not_found"
+        else:
+            msg = f"Gagal moderasi komentar: {error_details.get('message', str(e))}"
+            error_type = "api_error"
+        
+        return JsonResponse({
+            "ok": False, 
+            "msg": msg,
+            "error_type": error_type,
+            "details": str(e) if settings.DEBUG else None 
+        }, status=e.resp.status)
+        
     except Exception as e:
-        return JsonResponse({"ok": False, "msg": str(e)}, status=500)
+        return JsonResponse({
+            "ok": False, 
+            "msg": f"Terjadi kesalahan: {str(e)}",
+            "error_type": "server_error"
+        }, status=500)
