@@ -1,16 +1,35 @@
+{% load static %}
 <!doctype html>
 <html lang="id">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>JudiGuard - Deteksi Promosi Judi Online di Komentar YouTube</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <link rel="icon" href="{% static 'assets/image/icon.svg' %}">
+  {% block style %}{% endblock %}
   <style>
-    body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
-    .navbar { background: linear-gradient(135deg, #667eea, #764ba2); box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
-    .hero-section { padding: 60px 0 48px; background: linear-gradient(to bottom, #764ba2, #667eea); color: white; }
-    .hero-section .lead { opacity: 0.95; }
+    body {
+      background: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .navbar {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .hero-section {
+      padding: 60px 0 48px;
+      background: linear-gradient(to bottom, #764ba2, #667eea);
+      color: white;
+    }
+
+    .hero-section .lead {
+      opacity: 0.95;
+    }
 
     /* Input & Button Styling */
     .analyze-wrap {
@@ -19,10 +38,10 @@
     }
 
     .url-input-card {
-      background: rgba(255,255,255,0.98);
+      background: rgba(255, 255, 255, 0.98);
       border-radius: 14px;
       padding: 10px;
-      box-shadow: 0 12px 30px rgba(20,20,30,0.06);
+      box-shadow: 0 12px 30px rgba(20, 20, 30, 0.06);
       display: flex;
       gap: 10px;
       align-items: center;
@@ -40,7 +59,9 @@
       background: #ffffff;
     }
 
-    .url-input::placeholder { color: #9aa3b2; }
+    .url-input::placeholder {
+      color: #9aa3b2;
+    }
 
     .limit-select {
       width: 120px;
@@ -59,6 +80,7 @@
       position: relative;
       display: inline-block;
     }
+
     .select-wrapper .fa-caret-down {
       position: absolute;
       right: 10px;
@@ -80,21 +102,56 @@
       box-shadow: 0 10px 30px rgba(116, 66, 162, 0.18);
       transition: transform .12s ease, box-shadow .12s ease;
     }
-    .analyze-btn:active { transform: translateY(1px); }
-    .analyze-btn:hover { box-shadow: 0 14px 36px rgba(116,66,162,0.22); }
+
+    .analyze-btn:active {
+      transform: translateY(1px);
+    }
+
+    .analyze-btn:hover {
+      box-shadow: 0 14px 36px rgba(116, 66, 162, 0.22);
+    }
 
     @media (max-width: 576px) {
-      .url-input { height: 50px; padding: 0 14px; font-size: 0.95rem; }
-      .limit-select { width: 110px; height: 50px; }
-      .analyze-btn { height: 52px; font-size: 1rem; width: 100%; border-radius: 12px; }
-      .url-input-card { padding: 8px; gap: 8px; }
+      .url-input {
+        height: 50px;
+        padding: 0 14px;
+        font-size: 0.95rem;
+      }
+
+      .limit-select {
+        width: 110px;
+        height: 50px;
+      }
+
+      .analyze-btn {
+        height: 52px;
+        font-size: 1rem;
+        width: 100%;
+        border-radius: 12px;
+      }
+
+      .url-input-card {
+        padding: 8px;
+        gap: 8px;
+      }
     }
 
     /* Table Styling */
-    .table-container { background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; }
-    .prediction-judi { background-color: #ffebee !important; }
-    .prediction-bersih { background-color: #e8f5e9 !important; }
-    
+    .table-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .prediction-judi {
+      background-color: #ffebee !important;
+    }
+
+    .prediction-bersih {
+      background-color: #e8f5e9 !important;
+    }
+
     .mono {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: .95rem;
@@ -102,18 +159,18 @@
 
     /* Loading Overlay */
     .loading-overlay {
-      display: none; 
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.75); 
-      z-index: 9999; 
-      justify-content: center; 
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 9999;
+      justify-content: center;
       align-items: center;
-      flex-direction: column; 
-      color: white; 
+      flex-direction: column;
+      color: white;
       font-size: 1.5rem;
     }
 
@@ -127,8 +184,197 @@
       font-size: 0.85rem;
       font-weight: 600;
     }
+
+    .insight-section {
+      margin: 2.5rem 0;
+    }
+
+    .insight-wrapper {
+      background: #fafbfc;
+      border-left: 5px solid #667eea;
+      padding: 28px 32px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(102, 126, 234, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .insight-wrapper:hover {
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.12);
+    }
+
+    .insight-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .insight-label {
+      margin: 0;
+      color: #667eea;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .insight-label i {
+      font-size: 1.1rem;
+      opacity: 0.8;
+    }
+
+    .insight-time {
+      font-size: 0.75rem;
+      color: #a0aec0;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      font-weight: 500;
+    }
+
+    .insight-body {
+      color: #2d3748;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    /* Paragraph styling */
+    .insight-body p {
+      margin: 0 0 14px 0;
+    }
+
+    .insight-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .insight-body strong {
+      color: #1a202c;
+      font-weight: 600;
+    }
+
+    /* List styling */
+    .insight-body ul,
+    .insight-body ol {
+      margin: 12px 0;
+      padding-left: 24px;
+    }
+
+    .insight-body li {
+      margin: 8px 0;
+      line-height: 1.6;
+    }
+
+    .insight-body ul li:before {
+      content: "▪";
+      color: #667eea;
+      font-weight: bold;
+      display: inline-block;
+      width: 1em;
+      margin-left: -1em;
+    }
+
+    /* Heading styling */
+    .insight-body h1,
+    .insight-body h2,
+    .insight-body h3,
+    .insight-body h4,
+    .insight-body h5,
+    .insight-body h6 {
+      color: #1a202c;
+      margin: 16px 0 10px 0;
+      font-weight: 600;
+    }
+
+    .insight-body h1 {
+      font-size: 1.2rem;
+    }
+
+    .insight-body h2 {
+      font-size: 1.1rem;
+    }
+
+    .insight-body h3 {
+      font-size: 1.05rem;
+    }
+
+    /* Code styling */
+    .insight-body code {
+      background: #edf2f7;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+      font-size: 0.9em;
+      color: #e53e3e;
+    }
+
+    .insight-body pre {
+      background: #edf2f7;
+      padding: 12px 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+
+    /* Blockquote styling */
+    .insight-body blockquote {
+      border-left: 4px solid #cbd5e0;
+      padding-left: 16px;
+      margin: 12px 0;
+      color: #718096;
+      font-style: italic;
+    }
+
+    /* Table styling */
+    .insight-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+    }
+
+    .insight-body th,
+    .insight-body td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .insight-body th {
+      background: #edf2f7;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    @media (max-width: 576px) {
+      .insight-wrapper {
+        padding: 20px 24px;
+        border-left-width: 4px;
+      }
+
+      .insight-header-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+      }
+
+      .insight-body {
+        font-size: 0.9rem;
+      }
+
+      .insight-body ul,
+      .insight-body ol {
+        padding-left: 20px;
+      }
+    }
   </style>
 </head>
+
 <body>
 
   <!-- Navbar -->
@@ -143,30 +389,34 @@
           <!-- OAuth Status Badge -->
           <li class="nav-item me-3">
             {% if oauth_ok %}
-              <span class="oauth-badge bg-success text-white">
-                <i class="fas fa-check-circle"></i> YouTube Tersambung
-              </span>
+            <span class="oauth-badge bg-success text-white">
+              <i class="fas fa-check-circle"></i> YouTube Tersambung
+            </span>
             {% else %}
-              <a class="oauth-badge bg-danger text-white text-decoration-none" href="{% url 'oauth_start' %}">
-                <i class="fas fa-exclamation-circle"></i> Login YouTube
-              </a>
+            <a class="oauth-badge bg-danger text-white text-decoration-none" href="{% url 'oauth_start' %}">
+              <i class="fas fa-exclamation-circle"></i> Login YouTube
+            </a>
             {% endif %}
           </li>
-          
+
           <!-- User Dropdown -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" role="button" data-bs-toggle="dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" role="button"
+              data-bs-toggle="dropdown">
               {% if yt_user and yt_user.avatar %}
-                <img src="{{ yt_user.avatar }}" class="rounded-circle me-2" width="32" height="32" alt="Avatar">
+              <img src="{{ yt_user.avatar }}" class="rounded-circle me-2" width="32" height="32" alt="Avatar">
               {% else %}
-                <i class="fas fa-user-circle fs-4 me-2"></i>
+              <i class="fas fa-user-circle fs-4 me-2"></i>
               {% endif %}
               <span>{{ yt_user.name|default:"Guest" }}</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profil Saya</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+              {% if oauth_ok %}
+              <li><a class="dropdown-item text-danger" href="{% url 'logout_view' %}"><i
+                    class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+              {% else %}
+              <li><a class="dropdown-item" href="{% url 'oauth_start' %}"><i class="fas fa-user me-2"></i>Login</a></li>
+              {% endif %}
             </ul>
           </li>
         </ul>
@@ -174,8 +424,8 @@
     </div>
   </nav>
 
- {% block content %}
- {% endblock %}
+  {% block content %}
+  {% endblock %}
 
   <!-- Footer -->
   <footer class="bg-light text-muted py-3 mt-5 border-top">
@@ -186,21 +436,131 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Show loading on form submit
-    document.getElementById('analyzeForm').addEventListener('submit', function(e) {
-      const url = document.getElementById('youtubeUrl').value.trim();
-      if (url) {
-        document.getElementById('loading').style.display = 'flex';
-      }
-    });
+    document.addEventListener('DOMContentLoaded', function () {
 
-    // Calculate statistics
-    {% if rows %}
-    (function() {
+      // ========================================================
+      // FUNGSI BANTUAN (Helpers)
+      // ========================================================
+      function showNotification(message, type = 'info', icon = null) {
+        // Hapus notifikasi yang sudah ada
+        const existing = document.querySelector('.custom-notification');
+        if (existing) existing.remove();
+
+        // Pemetaan ikon
+        const iconMap = {
+          'success': 'check-circle',
+          'danger': 'exclamation-circle',
+          'warning': 'exclamation-triangle',
+          'info': 'info-circle'
+        };
+
+        const iconClass = icon || iconMap[type] || 'info-circle';
+
+        // Buat elemen notifikasi
+        const notification = document.createElement('div');
+        notification.className = `custom-notification alert alert-${type} alert-dismissible fade show`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            min-width: 300px;
+            max-width: 500px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        notification.innerHTML = `
+            <i class="fas fa-${iconClass} me-2"></i>
+            <strong>${message}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Hapus otomatis setelah 5 detik
+        setTimeout(() => {
+          notification.classList.remove('show');
+          setTimeout(() => notification.remove(), 150);
+        }, 5000);
+      }
+
+      function updateDeleteButton() {
+        const checked = document.querySelectorAll('.row-check:checked').length;
+        const btn = document.getElementById('deleteSelected');
+        if (btn) {
+          btn.disabled = checked === 0 || !{{ oauth_ok | yesno: 'true,false' }
+        };
+        btn.innerHTML = checked > 0
+          ? `<i class="fas fa-trash"></i> Hapus Terpilih (${checked})`
+          : `<i class="fas fa-trash"></i> Hapus Terpilih`;
+      }
+    }
+
+
+    // ========================================================
+    // 1. INISIALISASI & VALIDASI FORM ANALISIS
+    // ========================================================
+        const analyzeForm = document.getElementById('analyzeForm');
+    const urlInput = document.getElementById('youtubeUrl');
+    const urlErrorDiv = document.getElementById('urlError');
+    const loadingOverlay = document.getElementById('loading');
+    const loadingText = loadingOverlay ? loadingOverlay.querySelector('h3') : null; // Ambil elemen H3
+
+    if (analyzeForm) {
+      analyzeForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const url = urlInput.value.trim();
+
+        urlInput.classList.remove('is-invalid');
+        urlErrorDiv.style.display = 'none';
+
+        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|shorts\/)|youtu\.be\/)/;
+
+        if (!youtubeRegex.test(url)) {
+          urlInput.classList.add('is-invalid');
+          urlErrorDiv.style.display = 'block';
+          urlInput.focus();
+          return;
+        }
+
+        // --- TAMPILKAN OVERLAY  ---
+        loadingOverlay.style.display = 'flex';
+        if (loadingText) {
+          loadingText.innerHTML = 'Sedang memulai analisis...';
+        }
+
+        // Mulai simulasi progress
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          progress += Math.random() * 15;
+          if (progress > 95) progress = 95;
+
+          if (loadingText) {
+            // Ubah teks berdasarkan progress
+            if (progress < 30) {
+              loadingText.innerHTML = `Mengambil komentar... <strong>${Math.round(progress)}%</strong>`;
+            } else if (progress < 70) {
+              loadingText.innerHTML = `Menganalisis komentar... <strong>${Math.round(progress)}%</strong>`;
+            } else {
+              loadingText.innerHTML = `Sedang hampir selesai... <strong>${Math.round(progress)}%</strong>`;
+            }
+          }
+        }, 800); // Update setiap 800ms
+
+        // Submit form secara manual
+        this.submit();
+      });
+    }
+
+    // ========================================================
+    // 2. LOGIKA STATISTIK (Hanya berjalan jika ada data komentar)
+    // ========================================================
+    const statsSummary = document.getElementById('statsSummary');
+    if (statsSummary) {
       const rows = document.querySelectorAll('#commentsTable tbody tr');
       let judiCount = 0;
       let cleanCount = 0;
-      
+
       rows.forEach(row => {
         if (row.dataset.prediction === 'judi') {
           judiCount++;
@@ -208,119 +568,101 @@
           cleanCount++;
         }
       });
-      
+
       document.getElementById('judiCount').textContent = judiCount.toLocaleString('id-ID');
       document.getElementById('cleanCount').textContent = cleanCount.toLocaleString('id-ID');
-    })();
-    {% endif %}
-
-    // Filter functionality
-    document.getElementById('filterPrediction')?.addEventListener('change', function() {
-      const filter = this.value;
-      const rows = document.querySelectorAll('#commentsTable tbody tr');
-      
-      rows.forEach(row => {
-        if (filter === 'all') {
-          row.style.display = '';
-        } else if (filter === row.dataset.prediction) {
-          row.style.display = '';
-        } else {
-          row.style.display = 'none';
-        }
-      });
-    });
-
-    // Select all functionality
-    document.getElementById('selectAll')?.addEventListener('change', function() {
-      const checkboxes = document.querySelectorAll('.row-check');
-      checkboxes.forEach(cb => {
-        if (cb.closest('tr').style.display !== 'none') {
-          cb.checked = this.checked;
-        }
-      });
-      updateDeleteButton();
-    });
-
-    // Update delete button
-    function updateDeleteButton() {
-      const checked = document.querySelectorAll('.row-check:checked').length;
-      const btn = document.getElementById('deleteSelected');
-      if (btn) {
-        btn.disabled = checked === 0 || !{{ oauth_ok|yesno:'true,false' }};
-        btn.innerHTML = checked > 0 
-          ? `<i class="fas fa-trash"></i> Hapus Terpilih (${checked})` 
-          : `<i class="fas fa-trash"></i> Hapus Terpilih`;
-      }
     }
 
+    // ========================================================
+    // 3. INTERAKSI TABEL (Filter, Select All, dll)
+    // ========================================================
+    const filterPrediction = document.getElementById('filterPrediction');
+    if (filterPrediction) {
+      filterPrediction.addEventListener('change', function () {
+        const filter = this.value;
+        const rows = document.querySelectorAll('#commentsTable tbody tr');
+
+        rows.forEach(row => {
+          row.style.display = (filter === 'all' || filter === row.dataset.prediction) ? '' : 'none';
+        });
+        updateDeleteButton(); // Update status tombol hapus setelah filter
+      });
+    }
+
+    const selectAllCheckbox = document.getElementById('selectAll');
+    if (selectAllCheckbox) {
+      selectAllCheckbox.addEventListener('change', function () {
+        const checkboxes = document.querySelectorAll('.row-check');
+        checkboxes.forEach(cb => {
+          if (cb.closest('tr').style.display !== 'none') {
+            cb.checked = this.checked;
+          }
+        });
+        updateDeleteButton();
+      });
+    }
+
+    // Tambahkan listener ke setiap checkbox baris
     document.querySelectorAll('.row-check').forEach(cb => {
       cb.addEventListener('change', updateDeleteButton);
     });
 
-    // Delete selected functionality (AJAX)
-    document.getElementById('deleteSelected')?.addEventListener('click', async function(e) {
-      e.preventDefault(); 
-      
-      if (!{{ oauth_ok|yesno:'true,false' }}) {
+    // ========================================================
+    // 4. AKSI AJAX (Hapus Komentar)
+    // ========================================================
+    const deleteSelectedBtn = document.getElementById('deleteSelected');
+    if (deleteSelectedBtn) {
+      deleteSelectedBtn.addEventListener('click', async function (e) {
+        e.preventDefault();
+
+        if (!{{ oauth_ok | yesno: 'true,false' }
+      }) {
         showNotification('Silakan login YouTube terlebih dahulu untuk melakukan moderasi.', 'warning');
         return;
       }
-      
+
       const checkedBoxes = document.querySelectorAll('.row-check:checked');
       const checked = checkedBoxes.length;
-      
+
       if (checked === 0) {
         showNotification('Pilih minimal 1 komentar untuk dihapus.', 'warning');
         return;
       }
-      
+
       if (confirm(`Hapus ${checked} komentar yang dipilih?`)) {
-        // Show loading
         this.disabled = true;
         this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghapus...';
-        
+
         const formData = new FormData();
         formData.append('action', 'reject');
-        
-        // Ambil CSRF token
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        formData.append('csrfmiddlewaretoken', csrfToken);
-        
-        // Tambahkan semua comment_id
-        checkedBoxes.forEach(cb => {
-          formData.append('comment_id', cb.value);
-        });
-        
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        checkedBoxes.forEach(cb => formData.append('comment_id', cb.value));
+
         try {
           const response = await fetch('{% url "moderate_comments" %}', {
             method: 'POST',
             body: formData,
-            headers: {
-              'X-Requested-With': 'XMLHttpRequest'
-            }
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
           });
-          
+
           const result = await response.json();
-          
+
           if (result.ok) {
-            // Hapus row dari tabel
-            checkedBoxes.forEach(cb => {
-              cb.closest('tr').remove();
-            });
-            
-            // Update stats
+            checkedBoxes.forEach(cb => cb.closest('tr').remove());
+
             const remainingRows = document.querySelectorAll('#commentsTable tbody tr');
             if (remainingRows.length === 0) {
               document.getElementById('statsSummary').style.display = 'none';
-              document.querySelector('.table-container .table-responsive').outerHTML = `
-                <div class="text-center text-muted py-5" id="emptyState">
-                  <i class="fas fa-inbox fa-4x mb-4 opacity-50"></i>
-                  <h5>Semua komentar telah dihapus</h5>
-                  <p>Masukkan URL video YouTube dan klik Analisis untuk memulai lagi.</p>
-                </div>
-              `;
+              const tableContainer = document.querySelector('.table-container');
+              tableContainer.innerHTML = `
+                                <div class="text-center text-muted py-5" id="emptyState">
+                                    <i class="fas fa-inbox fa-4x mb-4 opacity-50"></i>
+                                    <h5>Semua komentar telah dihapus</h5>
+                                    <p>Masukkan URL video YouTube dan klik Analisis untuk memulai lagi.</p>
+                                </div>
+                            `;
             } else {
-              // Recalculate stats
               let judiCount = 0, cleanCount = 0;
               remainingRows.forEach(row => {
                 if (row.dataset.prediction === 'judi') judiCount++;
@@ -330,17 +672,16 @@
               document.getElementById('judiCount').textContent = judiCount;
               document.getElementById('cleanCount').textContent = cleanCount;
             }
-            
+
             const selectAllCheckbox = document.getElementById('selectAll');
             if (selectAllCheckbox) selectAllCheckbox.checked = false;
             updateDeleteButton();
-            
+
             showNotification(`Berhasil menghapus ${result.count} komentar!`, 'success');
           } else {
-            // Handle different error types
             let errorIcon = 'exclamation-triangle';
             let errorType = 'danger';
-            
+
             if (result.error_type === 'no_permission') {
               errorIcon = 'lock';
               errorType = 'warning';
@@ -348,96 +689,60 @@
               errorIcon = 'user-slash';
               errorType = 'warning';
             }
-            
+
             showNotification(result.msg, errorType, errorIcon);
           }
         } catch (error) {
           console.error('Error:', error);
           showNotification('Terjadi kesalahan saat menghapus komentar. Silakan coba lagi.', 'danger');
         } finally {
-          // Reset button
           this.disabled = false;
           updateDeleteButton();
         }
       }
     });
-    
-    // Function untuk show notification
-    function showNotification(message, type = 'info', icon = null) {
-      // Remove existing notification
-      const existing = document.querySelector('.custom-notification');
-      if (existing) existing.remove();
-      
-      // Icon mapping
-      const iconMap = {
-        'success': 'check-circle',
-        'danger': 'exclamation-circle',
-        'warning': 'exclamation-triangle',
-        'info': 'info-circle'
-      };
-      
-      const iconClass = icon || iconMap[type] || 'info-circle';
-      
-      // Create notification
-      const notification = document.createElement('div');
-      notification.className = `custom-notification alert alert-${type} alert-dismissible fade show`;
-      notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 10000;
-        min-width: 300px;
-        max-width: 500px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      `;
-      notification.innerHTML = `
-        <i class="fas fa-${iconClass} me-2"></i>
-        <strong>${message}</strong>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      `;
-      
-      document.body.appendChild(notification);
-      
-      // Auto remove after 5 seconds
-      setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 150);
-      }, 5000);
     }
 
-    // Export CSV functionality
-    document.getElementById('exportCsv')?.addEventListener('click', function() {
-      const rows = document.querySelectorAll('#commentsTable tbody tr');
-      let csv = 'Level,Username,Komentar,Komentar Bersih,Prediksi,Probabilitas,Waktu\n';
-      
-      rows.forEach(row => {
-        if (row.style.display !== 'none') {
-          const cells = row.querySelectorAll('td');
-          const level = cells[1].textContent.trim();
-          const username = cells[2].textContent.trim();
-          const comment = cells[3].textContent.trim().replace(/"/g, '""');
-          const clean = cells[4].textContent.trim().replace(/"/g, '""');
-          const prediction = cells[5].textContent.trim();
-          const probability = cells[6].querySelector('.text-nowrap').textContent.trim();
-          const time = cells[7].textContent.trim();
-          
-          csv += `"${level}","${username}","${comment}","${clean}","${prediction}","${probability}","${time}"\n`;
-        }
-      });
-      
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'deteksi_judi_youtube_' + new Date().getTime() + '.csv';
-      link.click();
-    });
+    // ========================================================
+    // 5. EKSPOR CSV
+    // ========================================================
+    const exportCsvBtn = document.getElementById('exportCsv');
+    if (exportCsvBtn) {
+      exportCsvBtn.addEventListener('click', function () {
+        const rows = document.querySelectorAll('#commentsTable tbody tr');
+        let csv = 'Level,Username,Komentar,Komentar Bersih,Prediksi,Probabilitas,Waktu\n';
 
-    // Table sorting (keep existing functionality)
+        rows.forEach(row => {
+          if (row.style.display !== 'none') {
+            const cells = row.querySelectorAll('td');
+            const level = cells[1].textContent.trim();
+            const username = cells[2].textContent.trim();
+            const comment = cells[3].textContent.trim().replace(/"/g, '""');
+            const clean = cells[4].textContent.trim().replace(/"/g, '""');
+            const prediction = cells[5].textContent.trim();
+            const probability = cells[6].querySelector('.text-nowrap').textContent.trim();
+            const time = cells[7].textContent.trim();
+
+            csv += `"${level}","${username}","${comment}","${clean}","${prediction}","${probability}","${time}"\n`;
+          }
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'deteksi_judi_youtube_' + new Date().getTime() + '.csv';
+        link.click();
+      });
+    }
+
+    // ========================================================
+    // 6. SORTING TABEL
+    // ========================================================
     (function () {
       const table = document.querySelector("#commentsTable");
       if (!table) return;
       table.querySelectorAll("th").forEach((th, colIndex) => {
-        if (colIndex === 0) return;
+        if (colIndex === 0) return; // Skip kolom checkbox
         th.style.cursor = "pointer";
         let asc = true;
         th.addEventListener("click", () => {
@@ -457,6 +762,10 @@
         });
       });
     })();
+
+});
   </script>
+  {% block script %}{% endblock %}
 </body>
+
 </html>

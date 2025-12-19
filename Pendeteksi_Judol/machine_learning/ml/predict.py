@@ -6,13 +6,14 @@ import joblib
 USE_PREPROCESS = True
 BEST_THR = 0.50
 
-_MODEL_PATH = Path(__file__).resolve().parent / "joblib" / "judol_pipeline_v1.joblib"
+_MODEL_PATH = Path(__file__).resolve().parent / "joblib" / "judol_pipeline_v3_saga.joblib"
 
 _lock = Lock()
 _PIPE = None
 
 if USE_PREPROCESS:
-    from .preprosess import preprosesing
+    # from .preprosess import preprosesing
+    from .final_insyaallah import preprocess as preprosesing
 
 def _lazy_load():
     global _PIPE

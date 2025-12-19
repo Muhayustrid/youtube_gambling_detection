@@ -23,8 +23,8 @@ from akun.views import revoke_and_logout_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
-    path('comment-analysis/', views.analyze, name='analyze'),
+    path('', views.analyze, name='analyze'),
+    path('cekpreprocess/', views.home, name='home'),
     path("oauth/start/", oauth_start, name="oauth_start"),
     path("oauth/callback/", oauth_callback, name="oauth_callback"),
     path("moderate/", moderate_comments, name="moderate_comments"),

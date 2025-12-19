@@ -7,26 +7,24 @@ Original file is located at
     https://colab.research.google.com/drive/1aCWGiSkZruigqD0rvYQl23LzsDIoDqSn
 """
 
-
 import re
 import unicodedata
 import difflib
 from typing import List
-from unidecode import unidecode
-from .asset.kamus.kamus_homoglyph import fold_homoglyphs
-
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
-
-"""# C. Preproses"""
+from unidecode import unidecode
 
 
 """1) Emoji → huruf/angka + hapus Variation Selector 16"""
 
 VS16 = "\uFE0F"
+COEN = "\u20E3"
 
 def remove_variation_selectors(s: str) -> str:
-    return s.replace(VS16, "")
+    s = s.replace(COEN, "")
+    s = s.replace(VS16, "")
+    return s
 
 def _emoji_digit_word_to_int(name: str):
     """Helper 'KEYCAP DIGIT NINE' / 'CIRCLED DIGIT ONE'."""
@@ -89,6 +87,7 @@ def normalize_emoji_text(s: str) -> str:
     s = emoji_letter_digit_to_ascii(s)
     return s
 
+
 """2) Unicode normalize (NFKC) + normalisasi punct/bracket/case"""
 
 _DASHES = re.compile(r"[\u2010\u2011\u2012\u2013\u2014\u2015\u2212]")
@@ -118,12 +117,12 @@ def to_lower(text: str) -> str:
 """3) Remove URL/mention/hashtag + bracket steril"""
 
 _RE_URLS     = re.compile(r'https?://\S+|www\.\S+', re.I)
-_RE_MENTIONS = re.compile(r'(?<![A-Za-z0-9_])@\w+')
+_RE_MENTIONS = re.compile(r'(?<![A-Za-z0-9_])@[a-zA-Z0-9_-]+')
 _RE_HASHTAGS = re.compile(r'(?<!\w)#\w+')
 _RE_BRACKETS = re.compile(r'[\[\]]')
 
 def remove_urls_mentions_hashtags(text: str) -> str:
-    # text = _RE_URLS.sub(" ", text)
+    text = _RE_URLS.sub(" ", text)
     text = _RE_MENTIONS.sub(" ", text)
     # text = _RE_HASHTAGS.sub(" ", text)
     return text
@@ -133,7 +132,7 @@ def remove_bracket(text: str) -> str:
 
 """4) Hapus timestamps jam:menit:detik"""
 
-_TS = re.compile(r"""\b(?:[01]?\d|2[0-3])\s*[:：]\s*[0-5]\d(?:\s*[:：]\s*[0-5]\d)?\b""", re.X)
+_TS = re.compile(r"""\b(?:[01]?\d|2[0-3])\s*[:：;]\s*[0-5]\d(?:\s*[:：;]\s*[0-5]\d)?\b""", re.X)
 def remove_timestamps(s: str) -> str:
     return _TS.sub(" ", s)
 
@@ -144,11 +143,82 @@ def strip_combining_marks(text: str) -> str:
     f = "".join(ch for ch in d if unicodedata.category(ch) != "Mn")
     return unicodedata.normalize("NFKC", f)
 
+HOMO_MAP = {
+    # Cyrillic
+    "А": "A", "а": "a", "В": "B", "в": "b", "Е": "E", "е": "e", "К": "K", "к": "k", "М": "M", "Т": "T",
+    "Х": "X", "х": "x", "О": "O", "о": "o", "Н": "H", "н": "h", "Р": "P", "р": "p", "С": "C", "с": "c",
+    "У": "Y", "у": "y", "З": "Z", "з": "z", "Я": "R", "Ч": "4", "Ж": "X", "Ц": "LL", "і": "i", "ј": "j",
+    "ѕ": "s", "ѡ": "w", "ә": "e", "б": "6", "г": "r", "д": "a", "и": "u", "й": "u", "л": "n", "м": "m",
+    "п": "n", "т": "t", "ф": "o", "ц": "u", "ш": "w", "щ": "w", "ъ": "b", "ы": "bi", "ь": "b", "э": "e",
+    "ю": "io", "я": "r", "ї": "i", "є": "e",
+
+    # ARMENIAN LETTERS
+    'Ա': 'U', 'ա': 'w', 'Բ': 'B', 'բ': 'b', 'Գ': '9', 'գ': 'q', 'Դ': 'N', 'դ': 'n', 'Ե': 'E', 'ե': 't',
+    'Զ': 'Z', 'զ': 'q', 'Է': 'E', 'է': 't', 'Ը': 'P', 'ը': 'p', 'Թ': 'P', 'թ': 'p', 'Ժ': 'D', 'ժ': 'd',
+    'Ի': 'H', 'ի': 'h', 'Լ': 'L', 'լ': 'l', 'Խ': 'X', 'խ': 'x', 'Ծ': 'G', 'ծ': 'd', 'Կ': 'Y', 'կ': 'k',
+    'Հ': 'H', 'հ': 'h', 'Ձ': 'A', 'ձ': 'a', 'Ղ': 'N', 'ղ': 'n', 'Ճ': 'U', 'ճ': 'u', 'Մ': 'M', 'մ': 'u',
+    'Յ': 'J', 'յ': 'j', 'Ն': 'U', 'ն': 'u', 'Շ': '2', 'շ': '2', 'Ո': 'N', 'ո': 'n', 'Չ': '4', 'չ': 'n',
+    'Պ': 'M', 'պ': 'm', 'Ջ': '2', 'ջ': '2', 'Ռ': 'N', 'ռ': 'n', 'Ս': 'U', 'ս': 'u', 'Վ': '4', 'վ': '4',
+    'Տ': 'T', 'տ': 't', 'Ր': 'R', 'ր': 'r', 'Ց': 'G', 'ց': 'g', 'Ւ': 'L', 'ւ': 'L', 'Փ': 'P', 'փ': 'p',
+    'Ք': 'P', 'ք': 'p', 'Օ': 'O', 'օ': 'o', 'Ֆ': 'F', 'ֆ': 'f',
+
+    # GREEK
+    "η": "n", "Η": "H", "σ": "o", "ς": "o", "Σ": "S", "ο": "o", "Ο": "O", "ρ": "p", "Ρ": "P", "κ": "k",
+    "Κ": "K", "ν": "v", "Ν": "N", "τ": "t", "Τ": "T", "χ": "x", "Χ": "X", "μ": "m", "Μ": "M", "λ": "a",
+    "Λ": "a", "α": "a", "β": "b", "γ": "y", "δ": "d", "ε": "e", "ζ": "z", "θ": "0", "ι": "i", "ξ": "e",
+    "π": "n", "υ": "u", "φ": "o", "ψ": "w", "ω": "w", "ϲ": "c", "ϵ": "e", "Ϛ": "s", "ϫ": "x", "Α": "A",
+    "Β": "B", "Δ": "A", "Γ": "r", "Ω": "W", "Ϝ": "F",
+
+    # CJK UNIFIED & KANJI
+    "丅": "t", "丄": "t", "丫": "y", "厶": "a", "乇": "e", "乚": "l", "囗": "o", "工": "i", "尺": "r", "丁": "t",
+    "十": "t", "一": "-", "二": "=", "三": "e", "口": "o", "人": "y", "入": "y", "X": "x", "匕": "t", "マ": "v",
+    "ム": "a", "カ": "n", "丨": "I", "亅": "J", "ロ": "O", "回": "O", "曰": "O", "乂": "X", "⻌": "Z", "八": "a",
+    "〇": "0",
+
+    # SMALL CAPITALS
+    'ᴀ': 'a', 'ʙ': 'b', 'ᴄ': 'c', 'ᴅ': 'd', 'ᴇ': 'e', 'ғ': 'f', 'ɢ': 'g', 'ʜ': 'h', 'ɪ': 'i', 'ᴊ': 'j', 'ᴋ': 'k',
+    'ʟ': 'l', 'ᴍ': 'm', 'ɴ': 'n', 'ᴏ': 'o', 'ᴘ': 'p', 'ꞯ': 'q', 'ʀ': 'r', 'ꜱ': 's', 'ᴛ': 't', 'ᴜ': 'u', 'ᴠ': 'v',
+    'ᴡ': 'w', 'x': 'x', 'ʏ': 'y', 'ᴢ': 'z',
+
+    # varian visual angka/huruf
+    '𝟶': '0', '𝟷': '1', '𝟸': '2', '𝟹': '3', '𝟺': '4', '𝟻': '5', '𝟼': '6', '𝟽': '7', '𝟾': '8', '𝟿': '9',
+    '𝟢': '0', '𝟣': '1', '𝟤': '2', '𝟹': '3', '𝟺': '4', '𝟻': '5', '𝟼': '6', '𝟽': '7', '𝟾': '8', '𝟿': '9',
+
+    # CANADIAN SYLLABICS
+    'ᗩ': 'a', 'ᐯ': 'v', 'ᐠ': 'v', 'ᑕ': 'c', 'ᑐ': 'j', 'ᗷ': 'b', 'ᑌ': 'u', 'ᑎ': 'n', 'ᑘ': 'u', 'ᑭ': 'p', 'ᑯ': 'd',
+    'ᑲ': 'b', 'ᑫ': 'q', 'ᕒ': 'p', 'ᙀ': 'q', 'ᒪ': 'l',  'ᒧ': 'j', 'ᒥ': 'r', 'ᗰ': 'm', 'ᗯ': 'w', 'ᙡ': 'w', 'ᔕ': 's',
+    'ᔅ': 'z', '᙭': 'x', 'ᔦ': 'y', 'ᕼ': 'h', 'ᖇ':'r',
+
+    # --- MATHEMATICAL SCRIPT (HURUF KURSIF) ---
+    '𝒜': 'A', '𝒞': 'C', '𝒟': 'D', '𝒢': 'G', '𝒥': 'J', '𝒦': 'K', '𝒩': 'N', '𝒪': 'O', '𝒫': 'P', '𝒬': 'Q',
+    '𝒮': 'S', '𝒯': 'T', '𝒰': 'U', '𝒱': 'V', '𝒲': 'W','𝒳': 'X', '𝒴': 'Y', '𝒵': 'Z',
+    'ℬ': 'B', 'ℰ': 'E', 'ℱ': 'F', 'ℋ': 'H', 'ℐ': 'I', 'ℒ': 'L', 'ℳ': 'M', 'ℛ': 'R', '𝒶': 'a',
+    '𝒷': 'b', '𝒸': 'c', '𝒹': 'd', '𝒻': 'f', '𝒽': 'h', '𝒾': 'i', '𝒿': 'j', '𝓀': 'k', '𝓁': 'l', '𝓂': 'm', '𝓃': 'n', '𝓅': 'p', '𝓆': 'q',
+    '𝓇': 'r', '𝓈': 's', '𝓉': 't', '𝓊': 'u', '𝓋': 'v', '𝓌': 'w', '𝓍': 'x', '𝓎': 'y', '𝓏': 'z', 'ℯ': 'e', 'ℊ': 'g', 'ℴ': 'o',
+
+    # --- LATIN EXTENDED (HOOKS, BARS, STROKES) ---
+    'Ɦ': 'H', 'ƙ': 'k', 'ƣ': 'g', 'ʞ': 'k', 'Ħ': 'H', 'ħ': 'h', 'Ɨ': 'I', 'ɨ': 'i', 'ł': 'l', 'Ɵ': 'O', 'Ɱ': 'M',
+    'Ⱡ': 'L', 'Ⱨ': 'H', 'Ɽ': 'R', 'Ꜹ': 'A',
+
+    # Emoji
+    # '🏵':'o'
+}
+
+def fold_homoglyphs(text: str) -> str:
+    return "".join(HOMO_MAP.get(ch, ch) for ch in text)
 
 
+"""# lexicon_alay"""
+
+# def fold_alay(text: list) -> list:
+#   text = text.split()
+#   out = [lexicon_alay[x] for x in text if x in lexicon_alay]
+#   return out
+
+"""# lexicon end"""
 
 def transliterasi_teks(teks_unicode):
-  return to_lower(unidecode(teks_unicode))
+  return unidecode(teks_unicode)
 
 
 """6) Intraword symbols handling"""
@@ -177,7 +247,7 @@ def keep_alnum_and_space(text: str) -> str:
 def squeeze_spaces(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
-"""8) Rejoin huruf terpisah & trailing digits"""
+"""9) Rejoin huruf terpisah & trailing digits"""
 
 VOWELS = set("aiueo")
 
@@ -185,13 +255,13 @@ def rejoin_split_letters(tokens: List[str]) -> List[str]:
     out, i, n = [], 0, len(tokens)
     while i < n:
         j, letters = i, []
+        # gabungkan huruf terpisah: p u l a u → pulau
         while j < n and re.fullmatch(r'[A-Za-z]', tokens[j]):
             letters.append(tokens[j].lower())
             j += 1
-            
-        # blok huruf ankga
         if len(letters) >= 3:
             word = ''.join(letters)
+            # kalau setelah huruf terpisah ada digit, gabungkan: p u l a u 7 7 7 → pulau777
             k, digits = j, []
             while k < n and re.fullmatch(r'\d+', tokens[k]):
                 digits.append(tokens[k]); k += 1
@@ -219,60 +289,83 @@ def rejoin_split_letters(tokens: List[str]) -> List[str]:
 
     return out
 
-"""9) Heuristik angka dinamis untuk konteks promosi"""
+"""10) Heuristik angka dinamis untuk konteks promosi"""
 
-PROMO_CUES = {
-    "slot","gacor","maxwin","depo","deposit","wd","jackpot",
-    "togel","casino","bonus","spin","bet","jp", "win", "hoki"
-    "promo", "jackpot"
+
+"""# 11) Leet/Plesetan Normalization"""
+
+def koreksi_kalimat(sentence: list, target_phrases: dict) -> list:
+
+    # 1. Pisahkan kalimat menjadi list of words (token)
+
+    # Tentukan ukuran jendela maksimal yang akan diperiksa.
+    # Ini didasarkan pada panjang karakter frasa target terpanjang.
+    if not target_phrases:
+        return sentence
+    max_window_size = max(len(key) for key in target_phrases.keys())
+
+    corrected_tokens = []
+    i = 0
+    while i < len(sentence):
+        found_match = False
+
+        # 2. Geser jendela dari ukuran terbesar ke terkecil
+        # untuk memprioritaskan pencocokan frasa terpanjang terlebih dahulu.
+        for window_size in range(max_window_size, 0, -1):
+            # Pastikan jendela tidak melebihi batas list
+            if i + window_size > len(sentence):
+                continue
+
+            # 3. Ambil jendela kata dan gabungkan
+            window = sentence[i : i + window_size]
+            concatenated_phrase = "".join(window)
+
+            # 4. Normalisasi frasa yang digabung untuk pencocokan
+            # (huruf kecil, hapus semua non-alphanumeric)
+            normalized_phrase = re.sub(r'[^a-zA-Z0-9]', '', concatenated_phrase).lower()
+
+            # 5. Cek apakah frasa yang dinormalisasi ada di kamus target
+            if normalized_phrase in target_phrases:
+                # Jika cocok, tambahkan versi yang benar ke hasil
+                corrected_tokens.append(target_phrases[normalized_phrase])
+                # Loncat indeks sejauh ukuran jendela
+                i += window_size
+                found_match = True
+                break
+
+        # 6. Jika tidak ada kecocokan, gunakan token asli
+        if not found_match:
+            corrected_tokens.append(sentence[i])
+            i += 1
+
+    # 7. Gabungkan kembali token yang sudah dikoreksi menjadi kalimat
+    return corrected_tokens
+
+
+daftar_target = {
+    'garudahoki': 'garudahoki',
+    'digarudahoki': 'digarudahoki',
+    'pulau777': 'pulau777',
+    'garuda': 'garuda',
+    'digaruda': 'garuda',
+    'mona4d':'mona4d',
+    'dimona4d':'dimona4d',
+    'alexis17':'alexis17',
+    'pulau':'pulau',
+    'dipulau':'dipulau',
+    '25kbet':'25kbet',
+    'alexis17':'alexis17',
+    'arwanatoto':'arwanatoto',
+    'istanabet17':'istanabet17',
+    'weton88':'weton88',
+    'gelora4d':'gelora4d',
+    'probet 855':'probet 855',
+    'banteng hoki':'banteng hoki',
+    'hoki':'hoki',
+    'sgi88':'sgi88',
+    'hokii':'hoki',
+
 }
-
-_RE_ALNUM_MIX   = re.compile(r'(?i)(?:[a-z]+\d+|\d+[a-z]+)')
-_RE_REP3_DIGITS = re.compile(r'^(\d)\1{2,}$')
-_RE_REP2_DIGITS = re.compile(r'^(\d)\1$')
-
-def _has_promo_near(tokens: List[str], idx: int, window: int = 2) -> bool:
-    start = max(0, idx - window)
-    end   = min(len(tokens), idx + window + 1)
-    for j in range(start, end):
-        if j == idx:
-            continue
-        tj = tokens[j].lower()
-        if tj in PROMO_CUES:
-            return True
-        if _RE_ALNUM_MIX.search(tj):
-            return True
-    return False
-
-def filter_numbers_dynamic(tokens: List[str], replace_with_num: bool = False) -> List[str]:
-    out: List[str] = []
-    for i, t in enumerate(tokens):
-        tok = t.lower()
-
-        if _RE_ALNUM_MIX.fullmatch(tok):
-            out.append(tok); continue
-
-        if not tok.isdigit():
-            out.append(tok); continue
-
-        if len(tok) >= 8:
-            out.append(tok); continue
-
-        if _RE_REP3_DIGITS.fullmatch(tok):
-            out.append(tok); continue
-
-        if _RE_REP2_DIGITS.fullmatch(tok) and _has_promo_near(tokens, i):
-            out.append(tok); continue
-
-        if _has_promo_near(tokens, i):
-            out.append(tok); continue
-
-        if replace_with_num:
-            out.append("<NUM>")
-        # else drop
-    return out
-
-"""10) Leet/Plesetan Normalization"""
 
 LEET_MAP_TABLE = {'0': 'o', '1': 'i', '3': 'e', '4': 'a', '6': 'g', '5': 's', '@': 'a', '9':'g', '!':'i'}
 _RE_AT_INFIX = re.compile(r'(?i)(?<=[a-z])@(?=[a-z])')
@@ -280,9 +373,11 @@ _RE_ALNUM_MIX = re.compile(r'(?i)(?:[a-z]+\d+|\d+[a-z]+)')
 
 def map_chars(tok: str) -> str:
     t = tok
+    # kalau brand 4d, jangan diutak-atik di sini
     if t.lower().endswith('4d'):
         return t
 
+    # ganti @ di tengah kata jadi 'a' (contoh m@xwin → maxwin)
     t = _RE_AT_INFIX.sub('a', t)
 
     out = []
@@ -294,12 +389,15 @@ def map_chars(tok: str) -> str:
             while j < n and t[j].isdigit():
                 j += 1
             run_len = j - i
+            # run digit ≥ 2 → biarkan apa adanya
             if run_len >= 2:
                 out.append(t[i:j])
             else:
+                # 1 digit → boleh dipetakan jadi huruf (4 → a, 0 → o, dll)
                 out.append(LEET_MAP_TABLE.get(ch, ch))
             i = j
             continue
+        # huruf/simbol → map kalau ada di LEET_MAP_TABLE
         out.append(LEET_MAP_TABLE.get(ch, ch))
         i += 1
     return ''.join(out)
@@ -349,11 +447,12 @@ SUBS = {
 
 DOMAIN_WORDS = {
     "maxwin","gacor","slot","spin","garudahoki","pulau","hoki",
-    "deposit","depo","wd","jackpot","togel","casino","promo","bonus","bet"
+    "deposit","depo","wd","jackpot","togel","casino","promo","bonus","bet", "4d"
 }
 
 def fix_infix_digits_with_domain(tok: str, domain=DOMAIN_WORDS, thr: float = 0.80) -> str:
     t = tok.lower()
+    # hanya kalau ada digit di tengah huruf: s1ot, m4x, t0g3l, dll
     if not re.search(r'[a-z]\d+[a-z]', t):
         return tok
     letters_only = re.sub(r'[^a-z]', '', t)
@@ -374,6 +473,7 @@ def squeeze_repeats(token: str, max_repeat: int = 2) -> str:
     for ch in token:
         if ch == prev:
             cnt += 1
+            # huruf dibatasi, digit boleh berulang
             if ch.isdigit() or cnt <= max_repeat:
                 out.append(ch)
         else:
@@ -387,28 +487,36 @@ def normalize_plesetan(tokens: List[str]) -> List[str]:
     for t in tokens:
         t0 = t.lower()
 
+        # 1) full digit → biarkan, nanti filter_numbers_dynamic yang urus
         if t0.isdigit():
             out.append(t0)
             continue
 
+        # 2) kalau token tepat ada di SUBS (m4xwin, g4c0r, sl0t, dll) → normalisasi langsung
         if t0 in SUBS:
             out.append(SUBS[t0])
             continue
 
+        # if t0 in lexicon_alay:
+        #     out.append(lexicon_alay[t0])
+        #     continue
+
+        # 3) kalau campuran huruf+angka, tapi bukan di SUBS → jangan diapa-apain (pulau777, wifi4d, 25kbet)
         if _RE_ALNUM_MIX.fullmatch(t0):
             out.append(t0)
             continue
 
+        # 4) sisanya (huruf saja / plesetan simbol) → baru dinormalisasi
         t1 = map_chars(t0)
         t2 = SUBS.get(t1, t1)
         t3 = squeeze_repeats(t2, max_repeat=2)
         t4 = fix_infix_digits_with_domain(t3)
         t5 = SUBS.get(t4, t4)
         out.append(t5)
+    result = koreksi_kalimat(out, daftar_target)
+    return result
 
-    return out
-
-"""11) Stopword & Stemming (Sastrawi)"""
+"""12) Stopword & Stemming (Sastrawi)"""
 
 _factory_sw = StopWordRemoverFactory()
 _stopwords_set = set(_factory_sw.get_stop_words())
@@ -427,14 +535,17 @@ def removestopword_stemming(tokens: List[str]) -> List[str]:
     tokens = stem_tokens(tokens)
     return tokens
 
-"""12) Pipeline """
+"""13) Pipeline utama"""
 
-def preprosesing(text: str, *, keep_at: bool = True, map_at_leet: bool = False) -> str:
+def preprocess(text: str, *, keep_at: bool = True, map_at_leet: bool = False) -> str:
     # A) Normalisasi bentuk
     text = normalize_emoji_text(text)
-    text = normalize_unicode(text)
+    text = normalize_unicode( text)
     text = normalize_punct(text)
     text = normalize_bracket(text)
+    text = strip_combining_marks(text)
+    text = fold_homoglyphs(text)
+
 
     # B) Noise pola khusus
     text = remove_urls_mentions_hashtags(text)
@@ -442,18 +553,20 @@ def preprosesing(text: str, *, keep_at: bool = True, map_at_leet: bool = False) 
     text = remove_bracket(text)
 
     # C) Akrítik + homoglyph
-    text = strip_combining_marks(text)
-    text = fold_homoglyphs(text)
+
 
     # D) Intraword symbols
     text = handle_intraword_symbols(text, keep_at=keep_at)
-    
-    # E) Unidecode
-    text = transliterasi_teks(text)
 
-    # F) Whitelist + spasi
+
+    text = transliterasi_teks(text)
+    text = to_lower(text)
+
+    # E) Whitelist + spasi
     text = keep_alnum_and_space(text)
     text = squeeze_spaces(text)
+
+
 
     # G) Rejoin huruf terpisah (+ trailing digits)
     tokens = text.split()
@@ -461,9 +574,6 @@ def preprosesing(text: str, *, keep_at: bool = True, map_at_leet: bool = False) 
 
     # H) Plesetan + angka dinamis + stopword+stemming
     tokens = normalize_plesetan(tokens)
-    # tokens = filter_numbers_dynamic(tokens, replace_with_num=False)
     tokens = removestopword_stemming(tokens)
 
     return squeeze_spaces(' '.join(tokens))
-
-

@@ -13,6 +13,49 @@ def extract_video_id(link: str) -> str:
     qs = parse_qs(u.query)
     return qs.get("v", [""])[0]
 
+
+def extract_youtube_video_id(url: str) -> str | None:
+    """
+    Mengekstrak video ID dari berbagai format URL YouTube.
+    Mengembalikan None jika URL tidak valid atau ID tidak ditemukan.
+    """
+    try:
+        # Pastikan URL adalah string
+        if not isinstance(url, str) or not url:
+            return None
+
+        u = urlparse(url)
+        
+        # Cek domain youtu.be
+        if u.netloc in ("youtu.be", "www.youtu.be"):
+            # ID ada di path, contoh: /cBVGlBWQzuc
+            return u.path.lstrip("/")
+
+        # Cek domain youtube.com
+        if u.netloc in ("youtube.com", "www.youtube.com", "m.youtube.com"):
+            # Cek format URL /shorts/
+            if "/shorts/" in u.path:
+                return u.path.split("/shorts/")[1].split("?")[0]
+            
+            # Cek format URL /watch
+            if u.path == "/watch":
+                qs = parse_qs(u.query)
+                # qs.get("v") mengembalikan list, jadi ambil elemen pertama
+                video_id = qs.get("v", [None])[0]
+                return video_id
+
+            # Cek format URL /embed/
+            if "/embed/" in u.path:
+                return u.path.split("/embed/")[1].split("?")[0]
+
+        # Jika tidak ada yang cocok, kembalikan None
+        return None
+
+    except Exception:
+        # Tangani error parsing yang tidak terduga
+        return None
+    
+    
 def fetch_all_comment_threads(video_id: str, max_total: int = 200):
     items, page_token = [], None
     try:
@@ -56,7 +99,7 @@ def fetch_all_replies(parent_id: str):
 
 def collect_comments(link: str, limit: int = 100):
     """Return: list[dict]"""
-    vid = extract_video_id(link)
+    vid = extract_youtube_video_id(link)
     threads = fetch_all_comment_threads(vid, max_total=limit)
 
     rows = []
