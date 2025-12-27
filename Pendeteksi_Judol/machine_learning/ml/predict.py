@@ -6,7 +6,7 @@ import joblib
 USE_PREPROCESS = True
 BEST_THR = 0.50
 
-_MODEL_PATH = Path(__file__).resolve().parent / "joblib" / "judol_pipeline_v3_saga.joblib"
+_MODEL_PATH = Path(__file__).resolve().parent / "model" / "judol_pipeline_v4_saga.joblib"
 
 _lock = Lock()
 _PIPE = None

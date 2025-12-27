@@ -258,12 +258,20 @@ def analyze(request):
 
         ctx.update({"url": url})
         
+    # Hitung statistik server-side
+    total_comments = len(results)
+    judi_count = sum(1 for item in results if item["label"] == 1)
+    clean_count = total_comments - judi_count
+
     ctx.update({
         "rows": results,
         "selected_limit": selected_limit,
         "llm_insight": llm_insight,
         "llm_insight_html": llm_insight_html or _format_llm_response(llm_insight) if llm_insight else None,
         "meta": meta,
+        "total_comments": total_comments,
+        "judi_count": judi_count,
+        "clean_count": clean_count,
     })
 
     return render(request, "html/crawling_analyze.html", ctx)

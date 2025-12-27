@@ -89,19 +89,19 @@
     <div id="statsSummary" class="row g-4 mb-4" style="{% if not rows %}display:none;{% endif %}">
       <div class="col-sm-4">
         <div class="p-4 bg-primary text-white rounded-4 shadow text-center">
-          <h4 class="mb-1 fw-bold" id="totalComments">{{ rows|length|default:0 }}</h4>
+          <h4 class="mb-1 fw-bold" id="totalComments">{{ total_comments|default:0 }}</h4>
           <small class="opacity-90">Komentar Diambil</small>
         </div>
       </div>
       <div class="col-sm-4">
         <div class="p-4 bg-danger text-white rounded-4 shadow text-center">
-          <h4 class="mb-1 fw-bold" id="judiCount">0</h4>
+          <h4 class="mb-1 fw-bold" id="judiCount">{{ judi_count|default:0 }}</h4>
           <small class="opacity-90">Terdeteksi Judi Online</small>
         </div>
       </div>
       <div class="col-sm-4">
         <div class="p-4 bg-success text-white rounded-4 shadow text-center">
-          <h4 class="mb-1 fw-bold" id="cleanCount">0</h4>
+          <h4 class="mb-1 fw-bold" id="cleanCount">{{ clean_count|default:0 }}</h4>
           <small class="opacity-90">Komentar Bersih</small>
         </div>
       </div>
@@ -232,5 +232,9 @@
   document.getElementById('youtubeUrl').addEventListener('input', function () {
     this.classList.remove('error');
     document.getElementById('urlError').style.display = 'none';
-  });</script>
+  });
+
+  // Set nilai oauthOk dari template ke window global
+  window.oauthOk = {{ oauth_ok|yesno:"true,false" }};
+</script>
 {% endblock %}
