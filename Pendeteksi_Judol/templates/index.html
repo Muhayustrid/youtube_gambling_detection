@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Comment Analysis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <button class="burger-menu" id="burgerMenu" aria-label="Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <span class="brand-name">AntiSlot</span>
+        </div>
+        <div class="nav-right">
+            <div class="profile-container" id="profileContainer">
+                <div class="profile-icon" id="profileIcon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span>Login</span>
+                </div>
+
+                <!-- Persistent "Suggest Login" Menu -->
+                <div class="suggest-login-menu" id="suggestLoginMenu">
+                    <div class="suggest-header">
+                        <span>Disarankan Login</span>
+                        <button class="close-suggest" id="closeSuggestBtn">&times;</button>
+                    </div>
+                    <p>Login untuk akses fitur penuh.</p>
+                </div>
+
+                <!-- Profile Dropdown (Logged In) -->
+                <div class="profile-dropdown-menu hidden" id="profileDropdown">
+                    <div class="dropdown-item" id="logoutBtn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span>Log Out</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="hero-section">
+            <h1>Comment Analysis</h1>
+            <p class="subtitle">Deteksi promosi judi online pada komentar YouTube secara otomatis</p>
+        </div>
+
+        <div class="analysis-container">
+            <div class="input-group">
+                <label for="urlInput">YouTube URL</label>
+                <input type="text" id="urlInput" placeholder="https://www.youtube.com/watch?v=..." spellcheck="false">
+            </div>
+
+            <div class="input-group">
+                <label for="maxResults">Max Results</label>
+                <select id="maxResults">
+                    <option value="20">20 Komentar</option>
+                    <option value="50">50 Komentar</option>
+                    <option value="100">100 Komentar</option>
+                </select>
+            </div>
+
+            <button class="btn-analyze" id="analyzeBtn">Analyze Comments</button>
+        </div>
+
+        <!-- System Status / Loading -->
+        <div class="loading-state hidden" id="loadingState">
+            <div class="spinner"></div>
+            <p>Sedang menganalisa komentar...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section hidden" id="resultsSection">
+
+            <!-- Summary Dashboard -->
+            <div class="summary-dashboard">
+                <div class="stat-card">
+                    <h3>Total Komentar</h3>
+                    <p id="statTotal">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Komentar Bersih</h3>
+                    <p id="statClean" class="text-clean">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Komentar Judol</h3>
+                    <p id="statGambling" class="text-gambling">0</p>
+                </div>
+            </div>
+
+            <!-- AI Insight -->
+            <div class="ai-insight-box">
+                <div class="insight-header">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" class="sparkle-icon">
+                        <path
+                            d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                    </svg>
+                    <h3>AI Insight</h3>
+                </div>
+                <p id="aiInsightText">Analisa sedang diproses...</p>
+            </div>
+
+            <div class="results-header">
+                <h2>Detail Komentar</h2>
+                <div class="filter-group">
+                    <label for="filterSelect">Filter:</label>
+                    <select id="filterSelect">
+                        <option value="all">Semua</option>
+                        <option value="gambling">Komentar Judol</option>
+                        <option value="clean">Komentar Bersih</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox"></th>
+                            <th>Username</th>
+                            <th>Komentar</th>
+                            <th>Prediksi</th>
+                            <th>Probabilitas</th>
+                            <th>Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                        <!-- Rows rendered via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Action Button -->
+    <div class="fab-container hidden" id="fabContainer">
+        <button class="fab-btn" id="fabBtn">
+            Moderasi Komentar Terpilih (<span id="fabCount">0</span>)
+        </button>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay hidden" id="loginModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>AntiSlot</h2>
+            </div>
+            <div class="modal-body">
+                <button class="google-login-btn" id="googleLoginBtn">
+                    <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M17.64 9.2c0-.637-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"
+                            fill="#4285F4"></path>
+                        <path
+                            d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.715H.957v2.332A8.997 8.997 0 0 0 9 18z"
+                            fill="#34A853"></path>
+                        <path
+                            d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"
+                            fill="#FBBC05"></path>
+                        <path
+                            d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.159 6.656 3.58 9 3.58z"
+                            fill="#EA4335"></path>
+                    </svg>
+                    Log in dengan Google
+                </button>
+                <p class="terms-text">Dengan log in, anda menyetujui ketentuan layanan kami.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="cancelLoginBtn">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Moderation Modal -->
+    <div class="modal-overlay hidden" id="moderationModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Moderasi Komentar</h2>
+            </div>
+            <div class="modal-body">
+                <p>Komentar yang dipilih akan ditolak (rejected) dan disembunyikan dari publik.</p>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="blockUserCheckbox">
+                    <label for="blockUserCheckbox">Blokir penulis komentar</label>
+                </div>
+            </div>
+            <div class="modal-footer row">
+                <button class="btn-cancel" id="cancelModerationBtn">Batal</button>
+                <button class="btn-confirm" id="confirmModerationBtn">Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 AntiSlot System. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
