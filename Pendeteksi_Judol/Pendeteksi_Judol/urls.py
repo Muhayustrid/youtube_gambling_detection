@@ -16,15 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from machine_learning import views
-from akun.views_oauth import oauth_start, oauth_callback
-from akun.views_moderate import moderate_comments
-from akun.views import revoke_and_logout_view
+from deteksi.views import index, oauth_start, oauth_callback, revoke_and_logout_view, moderate_comments
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.analyze, name='analyze'),
-    path('cekpreprocess/', views.home, name='home'),
+    path('', index, name='index'),
+    # path('cekpreprocess/', home, name='home'),
     path("oauth/start/", oauth_start, name="oauth_start"),
     path("oauth/callback/", oauth_callback, name="oauth_callback"),
     path("moderate/", moderate_comments, name="moderate_comments"),

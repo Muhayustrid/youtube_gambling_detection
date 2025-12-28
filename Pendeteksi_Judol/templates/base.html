@@ -1,442 +1,125 @@
 {% load static %}
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>JudiGuard - Deteksi Promosi Judi Online di Komentar YouTube</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-  <link rel="icon" href="{% static 'assets/image/icon.svg' %}">
-  {% block style %}{% endblock %}
-  <style>
-    body {
-      background: #f8f9fa;
-      font-family: 'Segoe UI', sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AntiSlot - Deteksi Judi Online</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
 
-    .navbar {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-    }
-
-    .hero-section {
-      padding: 60px 0 48px;
-      background: linear-gradient(to bottom, #764ba2, #667eea);
-      color: white;
-    }
-
-    .hero-section .lead {
-      opacity: 0.95;
-    }
-
-    /* Input & Button Styling */
-    .analyze-wrap {
-      max-width: 920px;
-      margin: 0 auto;
-    }
-
-    .url-input-card {
-      background: rgba(255, 255, 255, 0.98);
-      border-radius: 14px;
-      padding: 10px;
-      box-shadow: 0 12px 30px rgba(20, 20, 30, 0.06);
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .url-input {
-      flex: 1 1 auto;
-      border: none;
-      height: 56px;
-      padding: 0 18px;
-      border-radius: 10px;
-      font-size: 1rem;
-      box-shadow: none;
-      outline: none;
-      background: #ffffff;
-    }
-
-    .url-input::placeholder {
-      color: #9aa3b2;
-    }
-
-    .limit-select {
-      width: 120px;
-      height: 56px;
-      border: none;
-      padding: 0 12px;
-      border-radius: 10px;
-      background: #fff;
-      font-weight: 600;
-      box-shadow: none;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    .select-wrapper {
-      position: relative;
-      display: inline-block;
-    }
-
-    .select-wrapper .fa-caret-down {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-      color: #6c757d;
-    }
-
-    .analyze-btn {
-      display: block;
-      margin: 18px auto 0;
-      width: 360px;
-      max-width: 92%;
-      height: 58px;
-      border-radius: 999px;
-      font-size: 1.05rem;
-      font-weight: 700;
-      box-shadow: 0 10px 30px rgba(116, 66, 162, 0.18);
-      transition: transform .12s ease, box-shadow .12s ease;
-    }
-
-    .analyze-btn:active {
-      transform: translateY(1px);
-    }
-
-    .analyze-btn:hover {
-      box-shadow: 0 14px 36px rgba(116, 66, 162, 0.22);
-    }
-
-    @media (max-width: 576px) {
-      .url-input {
-        height: 50px;
-        padding: 0 14px;
-        font-size: 0.95rem;
-      }
-
-      .limit-select {
-        width: 110px;
-        height: 50px;
-      }
-
-      .analyze-btn {
-        height: 52px;
-        font-size: 1rem;
-        width: 100%;
-        border-radius: 12px;
-      }
-
-      .url-input-card {
-        padding: 8px;
-        gap: 8px;
-      }
-    }
-
-    /* Table Styling */
-    .table-container {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-    }
-
-    .prediction-judi {
-      background-color: #ffebee !important;
-    }
-
-    .prediction-bersih {
-      background-color: #e8f5e9 !important;
-    }
-
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: .95rem;
-    }
-
-    /* Loading Overlay */
-    .loading-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.75);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      color: white;
-      font-size: 1.5rem;
-    }
-
-    /* OAuth Badge */
-    .oauth-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    .insight-section {
-      margin: 2.5rem 0;
-    }
-
-    .insight-wrapper {
-      background: #fafbfc;
-      border-left: 5px solid #667eea;
-      padding: 28px 32px;
-      border-radius: 10px;
-      box-shadow: 0 2px 12px rgba(102, 126, 234, 0.08);
-      transition: all 0.3s ease;
-    }
-
-    .insight-wrapper:hover {
-      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.12);
-    }
-
-    .insight-header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .insight-label {
-      margin: 0;
-      color: #667eea;
-      font-size: 0.9rem;
-      font-weight: 600;
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .insight-label i {
-      font-size: 1.1rem;
-      opacity: 0.8;
-    }
-
-    .insight-time {
-      font-size: 0.75rem;
-      color: #a0aec0;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      font-weight: 500;
-    }
-
-    .insight-body {
-      color: #2d3748;
-      font-size: 0.95rem;
-      line-height: 1.7;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-
-    /* Paragraph styling */
-    .insight-body p {
-      margin: 0 0 14px 0;
-    }
-
-    .insight-body p:last-child {
-      margin-bottom: 0;
-    }
-
-    .insight-body strong {
-      color: #1a202c;
-      font-weight: 600;
-    }
-
-    /* List styling */
-    .insight-body ul,
-    .insight-body ol {
-      margin: 12px 0;
-      padding-left: 24px;
-    }
-
-    .insight-body li {
-      margin: 8px 0;
-      line-height: 1.6;
-    }
-
-    .insight-body ul li:before {
-      content: "▪";
-      color: #667eea;
-      font-weight: bold;
-      display: inline-block;
-      width: 1em;
-      margin-left: -1em;
-    }
-
-    /* Heading styling */
-    .insight-body h1,
-    .insight-body h2,
-    .insight-body h3,
-    .insight-body h4,
-    .insight-body h5,
-    .insight-body h6 {
-      color: #1a202c;
-      margin: 16px 0 10px 0;
-      font-weight: 600;
-    }
-
-    .insight-body h1 {
-      font-size: 1.2rem;
-    }
-
-    .insight-body h2 {
-      font-size: 1.1rem;
-    }
-
-    .insight-body h3 {
-      font-size: 1.05rem;
-    }
-
-    /* Code styling */
-    .insight-body code {
-      background: #edf2f7;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
-      font-size: 0.9em;
-      color: #e53e3e;
-    }
-
-    .insight-body pre {
-      background: #edf2f7;
-      padding: 12px 16px;
-      border-radius: 6px;
-      overflow-x: auto;
-      margin: 12px 0;
-    }
-
-    /* Blockquote styling */
-    .insight-body blockquote {
-      border-left: 4px solid #cbd5e0;
-      padding-left: 16px;
-      margin: 12px 0;
-      color: #718096;
-      font-style: italic;
-    }
-
-    /* Table styling */
-    .insight-body table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 12px 0;
-    }
-
-    .insight-body th,
-    .insight-body td {
-      padding: 10px 12px;
-      text-align: left;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .insight-body th {
-      background: #edf2f7;
-      font-weight: 600;
-      color: #2d3748;
-    }
-
-    @media (max-width: 576px) {
-      .insight-wrapper {
-        padding: 20px 24px;
-        border-left-width: 4px;
-      }
-
-      .insight-header-top {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-        margin-bottom: 16px;
-        padding-bottom: 12px;
-      }
-
-      .insight-body {
-        font-size: 0.9rem;
-      }
-
-      .insight-body ul,
-      .insight-body ol {
-        padding-left: 20px;
-      }
-    }
-  </style>
+    {% block style %}{% endblock %}
 </head>
 
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand fw-bold fs-4" href="#"><i class="fab fa-youtube text-danger"></i> JudiGuard</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto align-items-center">
-          <!-- OAuth Status Badge -->
-          <li class="nav-item me-3">
-            {% if oauth_ok %}
-            <span class="oauth-badge bg-success text-white">
-              <i class="fas fa-check-circle"></i> YouTube Tersambung
-            </span>
-            {% else %}
-            <a class="oauth-badge bg-danger text-white text-decoration-none" href="{% url 'oauth_start' %}">
-              <i class="fas fa-exclamation-circle"></i> Login YouTube
-            </a>
-            {% endif %}
-          </li>
+    <nav class="navbar">
+        <div class="nav-left">
+            <!-- <button class="burger-menu" id="burgerMenu" aria-label="Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button> -->
+            <a href="/" style="text-decoration:none; color:inherit;"><span class="brand-name">AntiSlot</span></a>
+        </div>
+        <div class="nav-right">
+            <div class="profile-container" id="profileContainer">
+                
+                {% if oauth_ok %}
+                <div class="profile-icon logged-in" id="profileIcon">
+                    {% if yt_user.avatar %}
+                        <img src="{{ yt_user.avatar }}" style="width:100%; height:100%; border-radius:50%; object-fit: cover;" alt="User">
+                    {% else %}
+                        <span>{{ yt_user.name|first }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="profile-dropdown-menu hidden" id="profileDropdown">
+                    <div style="padding: 0.75rem 1rem; border-bottom:1px solid #eee; font-size:0.85rem; color:#666;">
+                        {{ yt_user.name }}
+                    </div>
+                    <a href="{% url 'logout_view' %}" class="dropdown-item" style="text-decoration: none;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span>Log Out</span>
+                    </a>
+                </div>
 
-          <!-- User Dropdown -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" role="button"
-              data-bs-toggle="dropdown">
-              {% if yt_user and yt_user.avatar %}
-              <img src="{{ yt_user.avatar }}" class="rounded-circle me-2" width="32" height="32" alt="Avatar">
-              {% else %}
-              <i class="fas fa-user-circle fs-4 me-2"></i>
-              {% endif %}
-              <span>{{ yt_user.name|default:"Guest" }}</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              {% if oauth_ok %}
-              <li><a class="dropdown-item text-danger" href="{% url 'logout_view' %}"><i
-                    class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
-              {% else %}
-              <li><a class="dropdown-item" href="{% url 'oauth_start' %}"><i class="fas fa-user me-2"></i>Login</a></li>
-              {% endif %}
-            </ul>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+                {% else %}
+                <div class="profile-icon" id="profileIcon" onclick="window.location.href='{% url 'oauth_start' %}'">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span>Login</span>
+                </div>
+                
+                <div class="suggest-login-menu" id="suggestLoginMenu">
+                    <div class="suggest-header">
+                        <span>Disarankan Login</span>
+                        <button class="close-suggest" id="closeSuggestBtn">&times;</button>
+                    </div>
+                    <p>Login untuk moderasi.</p>
+                </div>
+                {% endif %}
 
-  {% block content %}
-  {% endblock %}
+            </div>
+        </div>
+    </nav>
 
-  <!-- Footer -->
-  <footer class="bg-light text-muted py-3 mt-5 border-top">
-    <div class="container text-center">
-      <small>&copy; 2025 JudiGuard - Judol Comment Detector</small>
-    </div>
-  </footer>
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{% static 'js/base.js' %}"></script>
-  {% block script %}{% endblock %}
+    <footer class="footer">
+        <p>&copy; 2025 AntiSlot System. Skripsi Implementation.</p>
+    </footer>
+
+    <script>
+        // UI Logic (Dropdowns, etc) adapted from your script.js
+        document.addEventListener('DOMContentLoaded', () => {
+            const profileContainer = document.getElementById('profileContainer');
+            const profileDropdown = document.getElementById('profileDropdown');
+            const suggestLoginMenu = document.getElementById('suggestLoginMenu');
+            const closeSuggestBtn = document.getElementById('closeSuggestBtn');
+            const isLoggedIn = {{ oauth_ok|yesno:"true,false" }};
+
+            // Toggle Dropdown if logged in
+            if(profileContainer && isLoggedIn) {
+                profileContainer.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if(profileDropdown) profileDropdown.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!profileContainer.contains(e.target) && profileDropdown && !profileDropdown.contains(e.target)) {
+                        profileDropdown.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Close Suggest Menu
+            if(closeSuggestBtn && suggestLoginMenu) {
+                closeSuggestBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    suggestLoginMenu.style.display = 'none';
+                });
+            }
+        });
+    </script>
+    {% block script %}{% endblock %}
 </body>
-
 </html>

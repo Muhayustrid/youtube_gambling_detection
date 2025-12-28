@@ -1,0 +1,93 @@
+{% load mathx %}
+
+<div class="summary-dashboard fade-in">
+    <div class="stat-card">
+        <h3>Total Komentar</h3>
+        <p id="statTotal">{{ total_comments }}</p>
+    </div>
+    <div class="stat-card">
+        <h3>Komentar Bersih</h3>
+        <p id="statClean" class="text-clean">{{ clean_count }}</p>
+    </div>
+    <div class="stat-card">
+        <h3>Komentar Judol</h3>
+        <p id="statGambling" class="text-gambling">{{ judi_count }}</p>
+    </div>
+</div>
+
+{% if llm_insight_html %}
+<div class="ai-insight-box fade-in">
+    <div class="insight-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" class="sparkle-icon">
+            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+        </svg>
+        <h3>AI Insight</h3> 
+    </div>
+    <div class="insight-content">
+        {{ llm_insight_html|safe }}
+    </div>
+</div>
+{% endif %}
+
+<div class="results-header fade-in">
+    <h2>Detail Komentar</h2>
+    <div class="filter-group">
+        <label for="filterSelect">Filter:</label>
+        <select id="filterSelect" onchange="filterTable(this.value)">
+            <option value="all">Semua</option>
+            <option value="gambling">Komentar Judol</option>
+            <option value="clean">Komentar Bersih</option>
+        </select>
+    </div>
+</div>
+
+<div class="table-responsive fade-in">
+    <form id="moderationForm">
+        <table class="results-table" id="commentsTable">
+            <thead>
+                <tr>
+                    <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleAll(this)"></th>
+                    <th>Username</th>
+                    <th>Komentar</th>
+                    <th>Prediksi</th>
+                    <th>Probabilitas</th>
+                    <th>Waktu</th>
+                </tr>
+            </thead>
+            <tbody id="resultsBody">
+                {% for r in rows %}
+                <tr class="comment-row" data-type="{{ r.label|yesno:'gambling,clean' }}">
+                    <td>
+                        <input type="checkbox" 
+                               name="comment_id" 
+                               value="{{ r.comment_id }}" 
+                               class="row-checkbox" 
+                               onchange="updateFab()"
+                               {% if r.label == 1 %}checked{% endif %}>
+                    </td>
+                    <td style="font-weight:500;">{{ r.author }}</td>
+                    <td style="max-width:300px;" title="{{ r.text }}">{{ r.text }}</td>
+                    <td>
+                        <span class="badge {{ r.label|yesno:'badge-gambling,badge-clean' }}">
+                            {{ r.label|yesno:'Komentar Judol,Komentar Bersih' }}
+                        </span>
+                    </td>
+                    <td>{{ r.proba|mul:100|floatformat:2 }}%</td>
+                    <td style="color:var(--text-secondary); font-size: 0.85rem;">{{ r.published_at }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align:center; padding: 2rem;">Tidak ada komentar ditemukan.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </form>
+</div>
+
+<script>
+    if (typeof updateFab === 'function') {
+        updateFab();
+    }
+</script>
