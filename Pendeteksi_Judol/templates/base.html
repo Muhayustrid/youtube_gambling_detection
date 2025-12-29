@@ -1,97 +1,125 @@
-<!doctype html>
+{% load static %}
+<!DOCTYPE html>
 <html lang="id">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Judol Comment Detector</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=account_circle" />
-  <style>
-    .table td {
-      vertical-align: top;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AntiSlot - Deteksi Judi Online</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
 
-    .judol {
-      background: #fff5f5;
-    }
-
-    .non {
-      background: #f6ffed;
-    }
-
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: .95rem;
-    }
-
-    footer {
-      margin-top: 3rem;
-    }
-
-    .navbar-brand {
-      font-weight: bold;
-    }
-
-    .profile-img {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      object-fit: cover;
-      cursor: pointer;
-    }
-  </style>
+    {% block style %}{% endblock %}
 </head>
 
-<body class="bg-light d-flex flex-column min-vh-100">
+<body>
 
-  <!-- navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-    <div class="container">
-      <a class="navbar-brand" href="{% url 'home' %}">Judol Detector</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
-        aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav me-auto">
-          <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
-            href="{% url 'home' %}">Home</a>
-          <a class="nav-link {% if request.resolver_match.url_name == 'analyze' %}active{% endif %}"
-            href="{% url 'analyze' %}">Analisis Komentar</a>
-          <a class="nav-link" href="#">Pricing</a>
+    <nav class="navbar">
+        <div class="nav-left">
+            <!-- <button class="burger-menu" id="burgerMenu" aria-label="Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button> -->
+            <a href="/" style="text-decoration:none; color:inherit;"><span class="brand-name">AntiSlot</span></a>
         </div>
-        <!-- kanan: profile / login -->
-        <div class="d-flex align-items-center">
-          <a href="#">
-            <span class="material-symbols-outlined">
-              account_circle
-            </span>
-          </a>
+        <div class="nav-right">
+            <div class="profile-container" id="profileContainer">
+                
+                {% if oauth_ok %}
+                <div class="profile-icon logged-in" id="profileIcon">
+                    {% if yt_user.avatar %}
+                        <img src="{{ yt_user.avatar }}" style="width:100%; height:100%; border-radius:50%; object-fit: cover;" alt="User">
+                    {% else %}
+                        <span>{{ yt_user.name|first }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="profile-dropdown-menu hidden" id="profileDropdown">
+                    <div style="padding: 0.75rem 1rem; border-bottom:1px solid #eee; font-size:0.85rem; color:#666;">
+                        {{ yt_user.name }}
+                    </div>
+                    <a href="{% url 'logout_view' %}" class="dropdown-item" style="text-decoration: none;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span>Log Out</span>
+                    </a>
+                </div>
+
+                {% else %}
+                <div class="profile-icon" id="profileIcon" onclick="window.location.href='{% url 'oauth_start' %}'">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span>Login</span>
+                </div>
+                
+                <div class="suggest-login-menu" id="suggestLoginMenu">
+                    <div class="suggest-header">
+                        <span>Disarankan Login</span>
+                        <button class="close-suggest" id="closeSuggestBtn">&times;</button>
+                    </div>
+                    <p>Login untuk moderasi.</p>
+                </div>
+                {% endif %}
+
+            </div>
         </div>
-      </div>
-    </div>
-  </nav>
-  <!-- end_navbar -->
+    </nav>
 
-  <!-- konten -->
-  <main class="flex-fill">
-    {% block content %}
-    {% endblock %}
-  </main>
-  <!-- end_konten -->
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
 
-  <!-- footer -->
-  <footer class="bg-light text-muted py-3 mt-auto border-top">
-    <div class="container text-center">
-      <small>&copy; 2025 Judol Comment Detector</small>
-    </div>
-  </footer>
-  <!--end_footer -->
+    <footer class="footer">
+        <p>&copy; 2025 AntiSlot System. Skripsi Implementation.</p>
+    </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // UI Logic (Dropdowns, etc) adapted from your script.js
+        document.addEventListener('DOMContentLoaded', () => {
+            const profileContainer = document.getElementById('profileContainer');
+            const profileDropdown = document.getElementById('profileDropdown');
+            const suggestLoginMenu = document.getElementById('suggestLoginMenu');
+            const closeSuggestBtn = document.getElementById('closeSuggestBtn');
+            const isLoggedIn = {{ oauth_ok|yesno:"true,false" }};
+
+            // Toggle Dropdown if logged in
+            if(profileContainer && isLoggedIn) {
+                profileContainer.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if(profileDropdown) profileDropdown.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!profileContainer.contains(e.target) && profileDropdown && !profileDropdown.contains(e.target)) {
+                        profileDropdown.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Close Suggest Menu
+            if(closeSuggestBtn && suggestLoginMenu) {
+                closeSuggestBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    suggestLoginMenu.style.display = 'none';
+                });
+            }
+        });
+    </script>
+    {% block script %}{% endblock %}
 </body>
-
 </html>

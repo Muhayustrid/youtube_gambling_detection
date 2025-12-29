@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="hero-section">
+  <h1>Analisis Komentar</h1>
+  <p class="subtitle">Deteksi promosi judi online pada komentar YouTube secara otomatis menggunakan Logistic Regression
+  </p>
+</div>
+
+<form class="analysis-container" hx-post="{% url 'index' %}" hx-target="#resultsContainer"
+  hx-indicator="#loadingState" hx-swap="innerHTML">
+
+  {% csrf_token %}
+
+  <div class="input-group">
+    <label for="urlInput">YouTube URL</label>
+
+    <input type="text" name="url" id="urlInput" placeholder="https://www.youtube.com/watch?v=..." spellcheck="false"
+      required value="{{ url|default:'' }}"
+      oninput="this.classList.remove('input-error'); document.getElementById('urlInlineError').innerHTML = '';">
+
+    <div id="urlInlineError"></div>
+  </div>
+
+  <div class="input-group">
+    <label for="maxResults">Max Results</label>
+    <select name="limit" id="maxResults">
+      <option value="20" {% if selected_limit == "20" %}selected{% endif %}>20 Komentar</option>
+      <option value="50" {% if selected_limit == "50" %}selected{% endif %}>50 Komentar</option>
+      <option value="100" {% if selected_limit == "100" %}selected{% endif %}>100 Komentar</option>
+      <option value="200" {% if selected_limit == "200" %}selected{% endif %}>200 Komentar</option>
+      <option value="500" {% if selected_limit == "500" %}selected{% endif %}>500 Komentar</option>
+      <option value="1000" {% if selected_limit == "1000" %}selected{% endif %}>1000 Komentar</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn-analyze" id="analyzeBtn">
+    Analisis
+  </button>
+</form>
+
+<div class="loading-state htmx-indicator" id="loadingState">
+  <div class="spinner"></div>
+  <p>Sedang mengambil komentar, melakukan preprocessing, dan prediksi ML...</p>
+</div>
+
+<div class="results-section" id="resultsContainer">
+  {% if rows %}
+  {% include 'html/partials/results_partial.html' %}
+  {% endif %}
+</div>
+
+<div class="fab-container hidden" id="fabContainer">
+  <button class="fab-btn" id="fabBtn" onclick="openModerationModal()">
+    Moderasi Komentar Terpilih (<span id="fabCount">0</span>)
+  </button>
+</div>
+
+<div class="modal-overlay hidden" id="moderationModal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2>Konfirmasi Moderasi</h2>
+    </div>
+    <div class="modal-body">
+      <p>Anda akan menghapus <span id="modCountText">0</span> komentar yang dipilih.</p>
+      <div class="checkbox-group">
+        <input type="checkbox" id="blockUserCheckbox">
+        <label for="blockUserCheckbox">Blokir penulis komentar juga (jika didukung API)</label>
+      </div>
+    </div>
+    <div class="modal-footer row">
+      <button class="btn-cancel" onclick="closeModerationModal()">Batal</button>
+      <button class="btn-confirm" id="confirmModerationBtn">Lanjutkan</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    // --- JavaScript Global untuk Interaksi Tabel ---
+
+    // 1. Fungsi Filter Tabel (Client Side)
+    function filterTable(value) {
+        const rows = document.querySelectorAll('.comment-row');
+        rows.forEach(row => {
+            if (value === 'all') {
+                row.style.display = '';
+            } else {
+                // Tampilkan jika dataset type sesuai pilihan
+                row.style.display = (row.dataset.type === value) ? '' : 'none';
+            }
+        });
+        // Reset checkbox "Select All" saat filter berubah
+        const selectAll = document.getElementById('selectAllCheckbox');
+        if(selectAll) selectAll.checked = false;
+        
+        // Update FAB karena jumlah item terlihat mungkin berubah
+        updateFab(); 
+    }
+
+    // 2. Fungsi Select All (Perbaikan Bug Header)
+    function toggleAll(source) {
+        // Ambil semua checkbox baris
+        const checkboxes = document.querySelectorAll('.row-checkbox');
+        
+        checkboxes.forEach(cb => {
+            // HANYA centang baris yang terlihat (tidak disembunyikan filter)
+            // Ini mencegah user tidak sengaja menghapus komentar yang sedang di-filter (hidden)
+            if(cb.closest('tr').style.display !== 'none') {
+                cb.checked = source.checked;
+            }
+        });
+
+        // PENTING: Panggil updateFab() agar tombol langsung muncul/hilang
+        updateFab();
+    }
+
+    // 3. Fungsi Update FAB (Perbaikan Bug Floating Button)
+    function updateFab() {
+        // Hitung checkbox yang dicentang DAN terlihat
+        // Kita gunakan selector :checked
+        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+        const checkedCount = checkedBoxes.length;
+
+        // Update angka di tombol FAB
+        const fabCount = document.getElementById('fabCount');
+        if(fabCount) fabCount.innerText = checkedCount;
+
+        // Update angka di Modal Konfirmasi
+        const modCount = document.getElementById('modCountText');
+        if(modCount) modCount.innerText = checkedCount;
+        
+        // Tampilkan/Sembunyikan Container FAB
+        const fabContainer = document.getElementById('fabContainer');
+        if (fabContainer) {
+            if (checkedCount > 0) {
+                fabContainer.classList.remove('hidden');
+            } else {
+                fabContainer.classList.add('hidden');
+            }
+        }
+    }
+
+    // --- Logika Modal Moderasi ---
+    const modModal = document.getElementById('moderationModal');
+    
+    function openModerationModal() {
+        // Cek login status dari template variable Django
+        const isOauthOk = {{ oauth_ok|yesno:"true,false" }};
+        
+        if(!isOauthOk) {
+            alert("Harap Login YouTube terlebih dahulu untuk melakukan moderasi!");
+            return;
+        }
+        modModal.classList.remove('hidden');
+    }
+
+    function closeModerationModal() {
+        modModal.classList.add('hidden');
+    }
+
+    // Handle Tombol "Lanjutkan" di Modal
+    const confirmBtn = document.getElementById('confirmModerationBtn');
+    if(confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+            const ids = Array.from(checkedBoxes).map(cb => cb.value);
+            
+            if(ids.length === 0) return;
+
+            // UI Loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = 'Memproses...';
+            this.disabled = true;
+
+            // Buat Form Data
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            formData.append('action', 'reject'); // Aksi reject/delete
+            ids.forEach(id => formData.append('comment_id', id));
+
+            // Kirim ke Backend
+            fetch("{% url 'moderate_comments' %}", {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Tampilkan notifikasi (alert sederhana untuk sekarang)
+                alert(data.msg || "Proses selesai");
+                
+                // Tutup modal
+                closeModerationModal();
+                
+                // Hapus baris tabel yang sudah diproses secara visual
+                checkedBoxes.forEach(cb => cb.closest('tr').remove());
+                
+                // Update ulang statistik FAB & Header Checkbox
+                updateFab();
+                const selectAll = document.getElementById('selectAllCheckbox');
+                if(selectAll) selectAll.checked = false;
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Terjadi kesalahan koneksi.");
+            })
+            .finally(() => {
+                // Reset tombol
+                this.innerHTML = originalText;
+                this.disabled = false;
+            });
+        });
+    }
+
+    // --- INISIALISASI SETELAH HTMX SWAP ---
+    // Karena tabel dimuat via HTMX, kita perlu memastikan fungsi updateFab 
+    // dijalankan ulang jika ada checkbox yang checked by default (misal dari server)
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+        // Cek jika target swap adalah resultsContainer
+        if(evt.detail.target.id === "resultsContainer") {
+            updateFab();
+        }
+    });
+</script>
+{% endblock %}
