@@ -138,7 +138,7 @@ def revoke_and_logout_view(request):
     request.session.pop('yt_creds', None)
     # request.session.pop('yt_user', None)
     
-    return redirect('analyze')
+    return redirect('index')
 
 # end fungsi OAuth
 
