@@ -198,11 +198,15 @@ def index(request):
         results, stats = process_youtube_comments(url, limit=limit)
 
         # --- Generate Insight (Service Call) ---
-        llm_insight, llm_insight_html, meta = generate_insight(url, limit, stats, results)
-
-        ctx.update({"url": url})
+        try:
+            llm_insight, llm_insight_html, meta = generate_insight(url, limit, stats, results)
+            
+        except Exception as e:
+            llm_insight = f"Gagal menghasilkan insight: {str(e)}"
+            llm_insight_html = ""
         
         ctx.update({
+            "url": url,
             "rows": results,
             "selected_limit": selected_limit,
             "llm_insight": llm_insight,

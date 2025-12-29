@@ -29,7 +29,10 @@ def predict_comment(raw_text: str) -> dict:
     """Return dict {'label', 'proba', 'clean'}."""
     _lazy_load()
     text = (raw_text or "")
-    clean = preprosesing(text) if USE_PREPROCESS else text
+    try:
+        clean = preprosesing(text) if USE_PREPROCESS else text
+    except Exception:
+        clean = text
 
     if not clean.strip():
         return {"label": 0, "proba": 0.0, "clean": clean}
