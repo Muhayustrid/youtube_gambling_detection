@@ -126,7 +126,7 @@ def oauth_callback(request):
         "scopes": creds.scopes,
         "user": user_info,  
     }
-    return redirect("analyze")
+    return redirect("index")
 
 def revoke_and_logout_view(request):
     creds = request.session.get('yt_creds')
