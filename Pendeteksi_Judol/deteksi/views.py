@@ -220,4 +220,7 @@ def index(request):
 
     return render(request, "html/index.html", ctx)
 
+def privacy_policy(request):
+    return render(request, 'html/privacy_policy.html')
+
 

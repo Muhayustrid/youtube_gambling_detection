@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from deteksi.views import index, oauth_start, oauth_callback, revoke_and_logout_view, moderate_comments
+from deteksi.views import index, oauth_start, oauth_callback, revoke_and_logout_view, moderate_comments, privacy_policy
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,4 +26,5 @@ urlpatterns = [
     path("oauth/callback/", oauth_callback, name="oauth_callback"),
     path("moderate/", moderate_comments, name="moderate_comments"),
     path("logout/", revoke_and_logout_view, name="logout_view")
+    path('privacy-policy/', privacy_policy, name='privacy_policy'),
 ]
