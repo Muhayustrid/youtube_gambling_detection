@@ -180,10 +180,33 @@ def get_youtube_client_from_session(yt_creds):
 
 def create_oauth_flow(redirect_uri, state=None):
     """
-    Membuat OAuth flow logic.
+    Membuat OAuth flow logic menggunakan Environment Variables.
     """
-    return Flow.from_client_secrets_file(
-        os.path.join(settings.BASE_DIR, "client_secret.json"),
+    client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET")
+    project_id = os.getenv("GOOGLE_PROJECT_ID")
+    auth_uri = os.getenv("GOOGLE_OAUTH_URI")
+    token_uri = os.getenv("GOOGLE_TOKEN_URI")
+    auth_provider_x509_cert_url = os.getenv("GOOGLE_AUTH_PROVIDER_X509_CERT_URL")
+    redirect_uris = os.getenv("GOOGLE_OAUTH_REDIRECT_URIS", "").split(",")
+    
+    if not client_id or not client_secret:
+        raise ValueError("GOOGLE_OAUTH_CLIENT_ID dan GOOGLE_OAUTH_CLIENT_SECRET harus diset di environment variables.")
+
+    client_config = {
+        "web": {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "project_id": project_id,
+            "auth_uri": auth_uri,
+            "token_uri": token_uri,
+            "auth_provider_x509_cert_url": auth_provider_x509_cert_url,
+            "redirect_uris": redirect_uris,
+        }
+    }
+    
+    return Flow.from_client_config(
+        client_config,
         scopes=SCOPES,
         redirect_uri=redirect_uri,
         state=state,
