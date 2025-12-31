@@ -25,6 +25,6 @@ urlpatterns = [
     path("oauth/start/", oauth_start, name="oauth_start"),
     path("oauth/callback/", oauth_callback, name="oauth_callback"),
     path("moderate/", moderate_comments, name="moderate_comments"),
-    path("logout/", revoke_and_logout_view, name="logout_view")
+    path("logout/", revoke_and_logout_view, name="logout_view"),
     path('privacy-policy/', privacy_policy, name='privacy_policy'),
 ]
