@@ -83,11 +83,7 @@
     </div>
     <div class="modal-body">
       <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
-           <circle cx="12" cy="12" r="10"></circle>
-           <line x1="12" y1="8" x2="12" y2="12"></line>
-           <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
+        <img src="{% static 'assets/image/forbidden.svg' %}" alt="Forbidden" width="64" height="64" style="object-fit: contain;">
         <p id="errorModalMsg" style="font-size: 1.1rem; color: #333;">Terjadi kesalahan.</p>
       </div>
     </div>
@@ -125,10 +121,7 @@
     </div>
     <div class="modal-body">
       <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-           <circle cx="12" cy="7" r="4"></circle>
-        </svg>
+        <img src="{% static 'assets/image/warning.svg' %}" alt="Warning" width="64" height="64" style="object-fit: contain;">
         <p style="font-size: 1.1rem; color: #333; font-weight: 500;">Harap login YouTube terlebih dahulu</p>
         <p style="font-size: 0.9rem; color: #6b7280;">Untuk melakukan moderasi komentar, Anda perlu login dengan akun YouTube terlebih dahulu, Pastikan akun anda memiliki otoritas terhadap video</p>
       </div>

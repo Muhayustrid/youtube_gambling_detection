@@ -732,6 +732,40 @@ body {
     animation: scaleIn 0.2s ease-out;
 }
 
+/* Style untuk gambar di modal */
+.modal-body img {
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+/* Modal Error */
+.modal-overlay#errorModal .btn-cancel {
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+}
+
+.modal-overlay#errorModal .modal-header h2 {
+    color: #ef4444;
+}
+
+/* Modal Login Required  */
+
+.modal-overlay#loginRequiredModal .btn-cancel {
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+}
+
+.modal-overlay#loginRequiredModal .btn-cancel:hover {
+    background-color: var(--accent-hover);
+    color: white;
+}
+
 /* Style khusus untuk konten markdown hasil AI */
 .markdown-content ul {
     padding-left: 20px; 
