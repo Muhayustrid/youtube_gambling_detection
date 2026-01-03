@@ -78,7 +78,7 @@
 
 <div class="modal-overlay hidden" id="errorModal">
   <div class="modal-container">
-    <div class="modal-header header-error">
+    <div class="modal-header">
       <h2 style="color: #ef4444;">Gagal Moderasi</h2>
     </div>
     <div class="modal-body">
@@ -99,7 +99,7 @@
 
 <div class="modal-overlay hidden" id="successModal">
   <div class="modal-container">
-    <div class="modal-header header-success">
+    <div class="modal-header">
       <h2 style="color: #16a34a;">Berhasil!</h2>
     </div>
     <div class="modal-body">
@@ -113,6 +113,28 @@
     </div>
     <div class="modal-footer row" style="justify-content: center;">
       <button class="btn-confirm" onclick="closeSuccessModal()" style="width: 100%; background-color: #16a34a; border-color: #16a34a;">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Login Required Modal -->
+<div class="modal-overlay hidden" id="loginRequiredModal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2>Login Diperlukan</h2>
+    </div>
+    <div class="modal-body">
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+           <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <p style="font-size: 1.1rem; color: #333; font-weight: 500;">Harap login YouTube terlebih dahulu</p>
+        <p style="font-size: 0.9rem; color: #6b7280;">Untuk melakukan moderasi komentar, Anda perlu login dengan akun YouTube terlebih dahulu, Pastikan akun anda memiliki otoritas terhadap video</p>
+      </div>
+    </div>
+    <div class="modal-footer row" style="justify-content: center;">
+      <button class="btn-cancel" onclick="closeLoginRequiredModal()" style="width: 100%;">Tutup</button>
     </div>
   </div>
 </div>
@@ -212,13 +234,14 @@
 
     // --- Logika Modal Moderasi ---
     const modModal = document.getElementById('moderationModal');
+    const loginRequiredModal = document.getElementById('loginRequiredModal');
     
     function openModerationModal() {
         // Cek login status dari template variable Django
         const isOauthOk = {{ oauth_ok|yesno:"true,false" }};
         
         if(!isOauthOk) {
-            alert("Harap Login YouTube terlebih dahulu untuk melakukan moderasi!");
+            loginRequiredModal.classList.remove('hidden');
             return;
         }
         modModal.classList.remove('hidden');
@@ -226,6 +249,10 @@
 
     function closeModerationModal() {
         modModal.classList.add('hidden');
+    }
+
+    function closeLoginRequiredModal() {
+        loginRequiredModal.classList.add('hidden');
     }
 
     // Handle Tombol "Lanjutkan" di Modal

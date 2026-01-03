@@ -723,20 +723,13 @@ body {
     75% { transform: translateX(4px); }
 }
 
-/* Modal Error */
-.modal-header.header-error {
-    border-bottom: 2px solid #fee2e2; 
-    background-color: #fef2f2; 
-}
 .modal-container {
     overflow: hidden; 
 }
 
-/* Modal Berhasil */
-.modal-header.header-success {
-    border-bottom: 2px solid #dcfce7; 
-    background-color: #f0fdf4;
-
+/* Modal Login Required - Custom Style */
+.modal-overlay.hidden#loginRequiredModal .modal-container {
+    animation: scaleIn 0.2s ease-out;
 }
 
 /* Style khusus untuk konten markdown hasil AI */
