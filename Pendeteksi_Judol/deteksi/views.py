@@ -4,6 +4,8 @@ from django.conf import settings
 from django.urls import reverse
 import os
 from django.http import HttpResponse
+
+from deteksi.ml.predict import predict_comment
 from .ml.yt import extract_youtube_video_id
 
 from .services.comment_processing import process_youtube_comments
@@ -30,6 +32,15 @@ def moderate_comments(request):
     
     action = request.POST.get("action")
     
+    block_user = request.POST.get("block_user")
+    
+    block_user_map = {'0': False, '1': True}
+
+    # if block_user == '1':
+    #     block_user = True
+        
+    print(block_user_map.get(block_user, "GAGAL"))
+    
     svc = get_youtube_client_from_session(request.session.get("yt_creds"))
     
     if not svc:
@@ -40,7 +51,7 @@ def moderate_comments(request):
         }, status=401)
 
     try:
-        ok, msg, err_type = perform_moderation_action(svc, comment_ids, action)
+        ok, msg, err_type = perform_moderation_action(svc, comment_ids, action, block_user_map.get(block_user, False))
         if not ok:
              return JsonResponse({
                 "ok": False, 
@@ -138,7 +149,7 @@ def revoke_and_logout_view(request):
     request.session.pop('yt_creds', None)
     # request.session.pop('yt_user', None)
     
-    return redirect('analyze')
+    return redirect('index')
 
 # end fungsi OAuth
 
@@ -216,4 +227,14 @@ def index(request):
 
     return render(request, "html/index.html", ctx)
 
+def home(request):
+    context = {}
+    if request.method == "POST":
+        text = request.POST.get("comment")
+        result = predict_comment(text)
+        context["text"] = text
+        context["clean"] = result["clean"]
+        context["label"] = "PROMOSI JUDOL" if result["label"] == 1 else "BUKAN"
+        context["proba"] = result["proba"]
+    return render(request, "html/tes.html", context)
 

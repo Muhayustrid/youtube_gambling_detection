@@ -66,42 +66,36 @@ def generate_insight(url, limit, stats, results_sample_check):
 
     # Construct prompt
     prompt_text = (
-        f"""
-            Berikut adalah ringkasan hasil klasifikasi komentar YouTube.
+    f"""
+    Bertindaklah sebagai **Analis Forensik Cyber** yang ahli mendeteksi pola promosi judi online (judol) di Indonesia. 
+    Tugas Anda adalah memberikan **insight kausalitas** (alasan logis) mengapa komentar-komentar berikut terdeteksi sebagai spam atau false positive.
 
-            DATA (ringkas):
-            - Kata kunci spam dominan:
-            {stats['spam_keywords_str']}
+    DATA ANALISIS:
+    1. Pola Kata Kunci Spam Terdeteksi: {stats['spam_keywords_str']}
+    2. Sampel Komentar Spam (High Confidence):
+    {stats['spam_samples_str']}
+    3. Sampel Komentar Ambigu/Ragu (Perlu Verifikasi):
+    {stats['unsure_samples_str']}
 
-            - Kata kunci komentar bersih:
-            {stats['clean_keywords_str']}
+    INSTRUKSI OUTPUT:
+    Buatlah analisis singkat (maksimal 4 poin, total <120 kata) yang langsung menjawab "KENAPA ini dianggap spam?".
 
-            - Contoh spam paling yakin:
-            {stats['spam_samples_str']}
+    FOKUS ANALISIS (Gunakan jika relevan):
+    - **Pola Penyamaran:** Sebutkan jika ada penggunaan simbol/angka untuk mengecoh filter (cth: g@cor, sl0t, p0la).
+    - **Teknik Persuasi:** Apakah ada janji kemenangan instan (maxwin), ajakan cek profil/bio, atau testimoni palsu?
+    - **Analisis False Positive (PENTING):** Jika komentar di "Sampel Ambigu" ternyata HANYA diskusi tentang judi (bukan promosi), tegaskan bahwa itu false positive karena konteksnya edukasi/berita.
 
-            - Contoh komentar ragu (40–60%):
-            {stats['unsure_samples_str']}
+    FORMAT OUTPUT (Markdown Bullet Points):
+    * **[Indikator Utama]**: Jelaskan pola spesifik (misal: "Penggunaan istilah samaran 'G4cor' dan ajakan klik link WhatsApp").
+    * **[Modus Operandi]**: Jelaskan taktiknya (misal: "Menggunakan akun bot untuk membalas komentar sendiri dengan testimoni kemenangan palsu").
+    * **[Evaluasi Ambigu]**: (Hanya jika ada data ragu) "Komentar 'X' terdeteksi berisiko, namun kemungkinan aman karena konteksnya adalah diskusi berita, bukan ajakan main."
+    * **[Kesimpulan]**: Ringkasan tingkat keparahan spam.
 
-            TUGAS ANDA:
-            Buat **ringkasan insight singkat** untuk ditampilkan di aplikasi web.
+    KONDISI KHUSUS:
+    Jika data kosong atau tidak ada pola spam, tulis: "Tidak ditemukan indikator promosi judi online. Interaksi didominasi diskusi relevan tanpa pola penyamaran atau ajakan bertaruh."
+    """
+)
 
-            ATURAN WAJIB:
-            - Maksimal **4 bullet point**
-            - Total panjang **maks 120 kata**
-            - Bahasa Indonesia formal-ringkas
-            - TANPA subjudul a/b/c
-            - TANPA paragraf panjang
-            - Fokus hanya pada:
-              1) Pola utama spam
-              2) Brand / nama situs menonjol (jika ada)
-              3) Perbedaan spam vs bersih
-              4) Catatan kehati-hatian model (jika relevan)
-
-            Jika **tidak ada spam signifikan**, tulis:
-            "Komentar video ini didominasi interaksi relevan dan tidak menunjukkan pola promosi judi online."
-
-            Keluarkan langsung dalam format markdown bullet list."""
-    )
 
     messages = [
         {"role": "system", "content": "Anda adalah ahli analisis keamanan digital berbahasa indonesia yang sedang menganalisis spam promosi judi online di komentar platform YouTube."},

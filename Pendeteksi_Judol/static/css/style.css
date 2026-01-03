@@ -722,3 +722,17 @@ body {
     25% { transform: translateX(-4px); }
     75% { transform: translateX(4px); }
 }
+
+/* Modal Error */
+.modal-header.header-error {
+    border-bottom: 2px solid #fee2e2; 
+    background-color: #fef2f2; 
+}
+.modal-container {
+    overflow: hidden; 
+}
+
+/* Modal Berhasil */
+.modal-header.header-success {
+    border-bottom: 2px solid #dcfce7; 
+    background-color: #f0fdf4;

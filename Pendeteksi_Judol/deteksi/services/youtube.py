@@ -233,9 +233,9 @@ def revoke_youtube_token(token):
         print(f"Error revoking token: {e}")
 
 
-def perform_moderation_action(service, comment_ids, action):
+def perform_moderation_action(service, comment_ids, action, block_user):
     """
-    Melakukan aksi moderasi (delete atau reject/banAuthor=False).
+    Melakukan aksi moderasi (delete atau reject/banAuthor.
     Mengembalikan tuple (ok: bool, msg: str, error_type: str|None).
     """
     if action == "delete":
@@ -247,7 +247,7 @@ def perform_moderation_action(service, comment_ids, action):
         service.comments().setModerationStatus(
             id=",".join(comment_ids),
             moderationStatus="rejected",
-            banAuthor=False
+            banAuthor=block_user
         ).execute()
         return True, f"Berhasil menghapus {len(comment_ids)} komentar", None
         
