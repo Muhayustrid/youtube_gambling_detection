@@ -66,7 +66,7 @@
       <p>Anda akan menghapus <span id="modCountText">0</span> komentar yang dipilih.</p>
       <div class="checkbox-group">
         <input type="checkbox" id="blockUserCheckbox">
-        <label for="blockUserCheckbox">Blokir penulis komentar juga (jika didukung API)</label>
+        <label for="blockUserCheckbox">Blokir pengguna</label>
       </div>
     </div>
     <div class="modal-footer row">
@@ -254,7 +254,7 @@
                 body: formData
             })
             .then(response => {
-                // Kita return object yang berisi status HTTP dan body JSON
+                // return object yang berisi status HTTP dan body JSON
                 return response.json().then(data => ({ status: response.status, body: data }));
             })
             .then(result => {
@@ -291,7 +291,7 @@
     }
 
     // --- INISIALISASI SETELAH HTMX SWAP ---
-    // Karena tabel dimuat via HTMX, kita perlu memastikan fungsi updateFab 
+    // Karena tabel dimuat via HTMX, memastikan fungsi updateFab 
     // dijalankan ulang jika ada checkbox yang checked by default (misal dari server)
     document.body.addEventListener('htmx:afterSwap', function(evt) {
         // Cek jika target swap adalah resultsContainer

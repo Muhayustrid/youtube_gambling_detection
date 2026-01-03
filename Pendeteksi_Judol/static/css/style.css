@@ -736,3 +736,16 @@ body {
 .modal-header.header-success {
     border-bottom: 2px solid #dcfce7; 
     background-color: #f0fdf4;
+
+}
+
+/* Style khusus untuk konten markdown hasil AI */
+.markdown-content ul {
+    padding-left: 20px; 
+    margin-top: 10px;
+}
+
+.markdown-content li {
+    margin-bottom: 8px;
+    line-height: 1.5;  
+}

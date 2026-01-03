@@ -67,32 +67,32 @@ def generate_insight(url, limit, stats, results_sample_check):
     # Construct prompt
     prompt_text = (
     f"""
-    Bertindaklah sebagai **Analis Forensik Cyber** yang ahli mendeteksi pola promosi judi online (judol) di Indonesia. 
-    Tugas Anda adalah memberikan **insight kausalitas** (alasan logis) mengapa komentar-komentar berikut terdeteksi sebagai spam atau false positive.
+    Tugas: Ekstrak pola indikasi judi online dari data mentah di bawah.
+    
+    DATA STATISTIK:
+    - Total Komentar: {stats['total']}
+    - Terdeteksi Spam Promosi Judi Online: {stats['judi_count']}
+    - Terdeteksi Clean: {stats['clean_count']})
 
-    DATA ANALISIS:
-    1. Pola Kata Kunci Spam Terdeteksi: {stats['spam_keywords_str']}
-    2. Sampel Komentar Spam (High Confidence):
-    {stats['spam_samples_str']}
-    3. Sampel Komentar Ambigu/Ragu (Perlu Verifikasi):
-    {stats['unsure_samples_str']}
+    DATA INPUT:
+    1. Keywords spam: {stats['spam_keywords_str'] if stats['spam_keywords_str'] else "-"}
+    2. Keywords pasca preprocessing: {stats['clean_keywords_str'] if stats['clean_keywords_str'] else "-"}
+    3. Sampel Spam: {stats['spam_samples_str'] if stats['spam_samples_str'] else "-"}
+    4. Sampel Clean: {stats['clean_samples_str'] if stats['clean_samples_str'] else "-"}
+    5. Sampel Ragu: {stats['unsure_samples_str'] if stats['unsure_samples_str'] else "-"}
 
-    INSTRUKSI OUTPUT:
-    Buatlah analisis singkat (maksimal 4 poin, total <120 kata) yang langsung menjawab "KENAPA ini dianggap spam?".
+    ATURAN FORMATTING (STRICT):
+    - **DILARANG** menggunakan kalimat pembuka (Contoh: "Berdasarkan data...", "Berikut analisis...", "Halo user").
+    - Output harus **DIMULAI LANGSUNG** dengan simbol bullet point (*).
+    - Hapus semua kata sambung yang tidak perlu. Langsung ke inti fakta.
 
-    FOKUS ANALISIS (Gunakan jika relevan):
-    - **Pola Penyamaran:** Sebutkan jika ada penggunaan simbol/angka untuk mengecoh filter (cth: g@cor, sl0t, p0la).
-    - **Teknik Persuasi:** Apakah ada janji kemenangan instan (maxwin), ajakan cek profil/bio, atau testimoni palsu?
-    - **Analisis False Positive (PENTING):** Jika komentar di "Sampel Ambigu" ternyata HANYA diskusi tentang judi (bukan promosi), tegaskan bahwa itu false positive karena konteksnya edukasi/berita.
+    TEMPLATE OUTPUT (Gunakan persis):
+    * **Pola Deteksi**: (Jelaskan trigger kata kunci dan variasi penulisan unik/alay yang ditemukan)
+    * **Modus**: (Jelaskan taktik persuasi, misal: janji maxwin, link di bio, manipulasi testimoni)
+    * **Tingkat Risiko**: (Kesimpulan singkat: Rendah/Sedang/Tinggi dan alasannya)
 
-    FORMAT OUTPUT (Markdown Bullet Points):
-    * **[Indikator Utama]**: Jelaskan pola spesifik (misal: "Penggunaan istilah samaran 'G4cor' dan ajakan klik link WhatsApp").
-    * **[Modus Operandi]**: Jelaskan taktiknya (misal: "Menggunakan akun bot untuk membalas komentar sendiri dengan testimoni kemenangan palsu").
-    * **[Evaluasi Ambigu]**: (Hanya jika ada data ragu) "Komentar 'X' terdeteksi berisiko, namun kemungkinan aman karena konteksnya adalah diskusi berita, bukan ajakan main."
-    * **[Kesimpulan]**: Ringkasan tingkat keparahan spam.
-
-    KONDISI KHUSUS:
-    Jika data kosong atau tidak ada pola spam, tulis: "Tidak ditemukan indikator promosi judi online. Interaksi didominasi diskusi relevan tanpa pola penyamaran atau ajakan bertaruh."
+    EXCEPTION (Jika data kosong/strip "-"):
+    "✅ **Aman:** Tidak ditemukan indikator promosi judi online. Interaksi didominasi diskusi relevan."
     """
 )
 
