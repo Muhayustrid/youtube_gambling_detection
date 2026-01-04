@@ -4,18 +4,20 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="eSAHjvnl_NaBDWzUbc-RsbgkT0a5DFhiIHPiztOdGno" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AntiSlot - Deteksi Judi Online</title>
     <link rel="icon" type="image/png" href="{% static 'assets/image/icon.png' %}">
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
+
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    
-    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"
+        integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
+        crossorigin="anonymous"></script>
 
     {% block style %}{% endblock %}
 </head>
@@ -35,22 +37,24 @@
         </div>
         <div class="nav-right">
             <div class="profile-container" id="profileContainer">
-                
+
                 {% if oauth_ok %}
                 <div class="profile-icon logged-in" id="profileIcon">
                     {% if yt_user.avatar %}
-                        <img src="{{ yt_user.avatar }}" style="width:100%; height:100%; border-radius:50%; object-fit: cover;" alt="User">
+                    <img src="{{ yt_user.avatar }}"
+                        style="width:100%; height:100%; border-radius:50%; object-fit: cover;" alt="User">
                     {% else %}
-                        <span>{{ yt_user.name|first }}</span>
+                    <span>{{ yt_user.name|first }}</span>
                     {% endif %}
                 </div>
-                
+
                 <div class="profile-dropdown-menu hidden" id="profileDropdown">
                     <div style="padding: 0.75rem 1rem; border-bottom:1px solid #eee; font-size:0.85rem; color:#666;">
                         {{ yt_user.name }}
                     </div>
                     <a href="{% url 'logout_view' %}" class="dropdown-item" style="text-decoration: none;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                             <polyline points="16 17 21 12 16 7"></polyline>
                             <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -61,13 +65,14 @@
 
                 {% else %}
                 <div class="profile-icon" id="profileIcon" onclick="window.location.href='{% url 'oauth_start' %}'">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                     <span>Login</span>
                 </div>
-                
+
                 <div class="suggest-login-menu" id="suggestLoginMenu">
                     <div class="suggest-header">
                         <span>Disarankan Login</span>
@@ -87,7 +92,20 @@
     </main>
 
     <footer class="footer">
-        <p>&copy; 2025 Sistem AntiSlot</p>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
+            <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center;">
+                <a href="{% url 'privacy_policy' %}"
+                    style="color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;"
+                    onmouseover="this.style.color='var(--text-primary)'"
+                    onmouseout="this.style.color='var(--text-secondary)'">Privacy Policy</a>
+                <span style="color: var(--border-color);">•</span>
+                <a href="{% url 'terms_of_service' %}"
+                    style="color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;"
+                    onmouseover="this.style.color='var(--text-primary)'"
+                    onmouseout="this.style.color='var(--text-secondary)'">Terms of Service</a>
+            </div>
+            <p>&copy; 2025 Sistem AntiSlot</p>
+        </div>
     </footer>
 
     <script>
@@ -99,29 +117,32 @@
             const closeSuggestBtn = document.getElementById('closeSuggestBtn');
             const isLoggedIn = {{ oauth_ok|yesno:"true,false" }};
 
-            // Toggle Dropdown if logged in
-            if(profileContainer && isLoggedIn) {
-                profileContainer.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if(profileDropdown) profileDropdown.classList.toggle('hidden');
-                });
+        // Toggle Dropdown if logged in
+        if (profileContainer && isLoggedIn) {
+            profileContainer.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (profileDropdown) {
+                    profileDropdown.classList.toggle('hidden');
+                }
+            });
 
-                document.addEventListener('click', (e) => {
-                    if (!profileContainer.contains(e.target) && profileDropdown && !profileDropdown.contains(e.target)) {
-                        profileDropdown.classList.add('hidden');
-                    }
-                });
-            }
+            document.addEventListener('click', (e) => {
+                if (!profileContainer.contains(e.target) && profileDropdown && !profileDropdown.contains(e.target)) {
+                    profileDropdown.classList.add('hidden');
+                }
+            });
+        }
 
-            // Close Suggest Menu
-            if(closeSuggestBtn && suggestLoginMenu) {
-                closeSuggestBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    suggestLoginMenu.style.display = 'none';
-                });
-            }
+        // Close Suggest Menu
+        if (closeSuggestBtn && suggestLoginMenu) {
+            closeSuggestBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                suggestLoginMenu.style.display = 'none';
+            });
+        }
         });
     </script>
     {% block script %}{% endblock %}
 </body>
+
 </html>

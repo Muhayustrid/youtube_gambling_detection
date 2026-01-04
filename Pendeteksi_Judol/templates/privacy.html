@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="google-site-verification" content="eSAHjvnl_NaBDWzUbc-RsbgkT0a5DFhiIHPiztOdGno" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - AntiSlot</title>
+    <link rel="icon" type="image/png" href="{% static 'assets/image/icon.png' %}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/privacy_term.css' %}" >
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Privacy Policy</h1>
+            <p class="brand">AntiSlot - Sistem Deteksi Judi Online</p>
+            <p class="last-updated">Terakhir diperbarui: 5 Januari 2026</p>
+        </div>
+
+        <div class="content-section">
+            <h2>1. Informasi yang Kami Kumpulkan</h2>
+            <p>AntiSlot mengumpulkan informasi berikut untuk menyediakan layanan analisis komentar YouTube:</p>
+            <ul>
+                <li><strong>Informasi Akun Google:</strong> Nama, email, dan foto profil Anda ketika Anda login
+                    menggunakan OAuth Google.</li>
+                <li><strong>Data YouTube:</strong> URL video YouTube yang Anda analisis dan komentar publik dari video
+                    tersebut.</li>
+                <li><strong>Data Penggunaan:</strong> Informasi tentang bagaimana Anda menggunakan layanan kami,
+                    termasuk waktu akses dan fitur yang digunakan.</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h2>2. Bagaimana Kami Menggunakan Informasi</h2>
+            <p>Informasi yang kami kumpulkan digunakan untuk:</p>
+            <ul>
+                <li>Menyediakan dan meningkatkan layanan deteksi konten judi online di komentar YouTube</li>
+                <li>Menganalisis komentar menggunakan model machine learning kami</li>
+                <li>Memberikan insight AI tentang hasil analisis</li>
+                <li>Memungkinkan Anda untuk melakukan moderasi komentar (jika Anda memiliki akses ke video)</li>
+                <li>Meningkatkan akurasi dan performa sistem kami</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h2>3. Penyimpanan dan Keamanan Data</h2>
+            <p>Kami berkomitmen untuk melindungi data Anda:</p>
+            <ul>
+                <li>Data login Anda disimpan secara aman menggunakan session management Django</li>
+                <li>Token OAuth disimpan dengan enkripsi dan hanya digunakan untuk mengakses API YouTube atas nama Anda
+                </li>
+                <li>Kami tidak menyimpan komentar YouTube secara permanen; analisis dilakukan secara real-time</li>
+                <li>Koneksi ke layanan kami dilindungi dengan protokol keamanan standar industri</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h2>4. Berbagi Informasi dengan Pihak Ketiga</h2>
+            <p>Kami <strong>tidak</strong> menjual, menyewakan, atau membagikan informasi pribadi Anda kepada pihak
+                ketiga untuk tujuan pemasaran. Kami hanya berbagi informasi dalam kondisi berikut:</p>
+            <ul>
+                <li><strong>Google/YouTube:</strong> Untuk mengakses data komentar dan melakukan moderasi melalui
+                    YouTube API</li>
+                <li><strong>Penyedia Layanan:</strong> Untuk hosting dan infrastruktur (dengan perjanjian kerahasiaan)
+                </li>
+                <li><strong>Kepatuhan Hukum:</strong> Jika diwajibkan oleh hukum atau untuk melindungi hak kami</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h2>5. Hak Anda</h2>
+            <p>Anda memiliki hak untuk:</p>
+            <ul>
+                <li>Mengakses informasi pribadi yang kami simpan tentang Anda</li>
+                <li>Meminta koreksi atau penghapusan data Anda</li>
+                <li>Mencabut akses OAuth kapan saja melalui pengaturan akun Google Anda</li>
+                <li>Logout dari sistem kami, yang akan menghapus session Anda</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h2>6. Cookies dan Teknologi Pelacakan</h2>
+            <p>Kami menggunakan cookies dan teknologi serupa untuk:</p>
+            <ul>
+                <li>Menjaga session login Anda</li>
+                <li>Mengingat preferensi Anda</li>
+                <li>Menganalisis penggunaan layanan untuk perbaikan</li>
+            </ul>
+            <p>Anda dapat mengatur browser Anda untuk menolak cookies, namun beberapa fitur mungkin tidak berfungsi
+                dengan baik.</p>
+        </div>
+
+        <div class="content-section">
+            <h2>7. Perubahan pada Privacy Policy</h2>
+            <p>Kami dapat memperbarui Privacy Policy ini dari waktu ke waktu. Perubahan akan diposting di halaman ini
+                dengan tanggal "Terakhir diperbarui" yang baru. Kami mendorong Anda untuk meninjau halaman ini secara
+                berkala.</p>
+        </div>
+
+        <div class="content-section">
+            <h2>8. Hubungi Kami</h2>
+            <p>Jika Anda memiliki pertanyaan tentang Privacy Policy ini atau praktik privasi kami, silakan hubungi kami
+                melalui:</p>
+            <ul>
+                <li>Email: support@antislot.com</li>
+                <li>Website: AntiSlot</li>
+            </ul>
+        </div>
+
+        <a href="{% url 'index' %}" class="back-button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Kembali ke Halaman Utama
+        </a>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2025 Sistem AntiSlot</p>
+    </footer>
+</body>
+
+</html>
