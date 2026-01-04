@@ -1,6 +1,6 @@
 import os
 import json
-import markdown
+
 from django.utils import timezone
 from django.core.cache import cache
 from ..llm.openrouter_client import call_openrouter_with_fallback
@@ -25,9 +25,9 @@ def _log_llm_call(prompt: str, response: str, meta: dict):
     with open(LLM_LOG_FILE, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
-def _format_llm_response(text: str) -> str:
+def _clean_llm_response(text: str) -> str:
     """
-    Convert markdown to HTML 
+    Clean raw markdown from LLM (remove code blocks)
     """
     if not text:
         return ""
@@ -43,15 +43,7 @@ def _format_llm_response(text: str) -> str:
         if last_code_block_end != -1:
             text = text[3:last_code_block_end].strip()
             
-    html = markdown.markdown(
-        text,
-        extensions=['tables', 'nl2br', 'sane_lists']
-    )
-    
-    html = html.replace('<p><strong>', '<strong>')
-    html = html.replace('</strong></p>', '</strong>')
-    
-    return html
+    return text
 
 def generate_insight(url, limit, stats, results_sample_check):
     """
@@ -110,11 +102,11 @@ def generate_insight(url, limit, stats, results_sample_check):
     
     if content:
         llm_insight = content.strip()
-        llm_insight_html = _format_llm_response(llm_insight)
+        llm_insight_cleaned = _clean_llm_response(llm_insight)
         
         cache.set(cache_key, {
             "insight": llm_insight,
-            "html": llm_insight_html,
+            "html": llm_insight_cleaned,
             "meta": meta
         }, CACHE_TTL)
         try:
@@ -140,7 +132,7 @@ def generate_insight(url, limit, stats, results_sample_check):
             )
         
         llm_insight = insight_text
-        llm_insight_html = _format_llm_response(insight_text)
+        llm_insight_cleaned = _clean_llm_response(insight_text)
         meta = {"model": "fallback-stat-only", "status": "ai_failed"}
 
-    return llm_insight, llm_insight_html, meta
+    return llm_insight, llm_insight_cleaned, meta

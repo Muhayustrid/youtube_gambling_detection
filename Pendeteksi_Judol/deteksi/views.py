@@ -210,15 +210,14 @@ def index(request):
 
         # --- Generate Insight (Service Call) ---
         try: 
-            llm_insight, llm_insight_html, meta = generate_insight(url, limit, stats, results)
+            llm_insight, llm_insight_cleaned, meta = generate_insight(url, limit, stats, results)
             ctx.update({
                 "url": url,
-                "llm_insight": llm_insight,
-                "llm_insight_html": llm_insight_html,
+                "llm_insight": llm_insight_cleaned,
                 })
         except Exception as e:
             llm_insight = None
-            llm_insight_html = None
+            llm_insight_cleaned = None
             meta = None
 
         
