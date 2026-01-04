@@ -59,31 +59,30 @@ def generate_insight(url, limit, stats, results_sample_check):
     # Construct prompt
     prompt_text = (
     f"""
-    Tugas: Ekstrak pola indikasi judi online dari data mentah di bawah.
+    Tugas: Analisis pola indikasi judi online dan validasi potensi salah deteksi (False Positive).
     
     DATA STATISTIK:
     - Total Komentar: {stats['total']}
-    - Terdeteksi Spam Promosi Judi Online: {stats['judi_count']}
-    - Terdeteksi Clean: {stats['clean_count']})
+    - Terdeteksi Spam Promosi Judi: {stats['judi_count']}
+    - Terdeteksi Bersih: {stats['clean_count']}
 
     DATA INPUT:
-    1. Keywords spam: {stats['spam_keywords_str'] if stats['spam_keywords_str'] else "-"}
-    2. Keywords pasca preprocessing: {stats['clean_keywords_str'] if stats['clean_keywords_str'] else "-"}
-    3. Sampel Spam: {stats['spam_samples_str'] if stats['spam_samples_str'] else "-"}
-    4. Sampel Clean: {stats['clean_samples_str'] if stats['clean_samples_str'] else "-"}
-    5. Sampel Ragu: {stats['unsure_samples_str'] if stats['unsure_samples_str'] else "-"}
+    1. Keywords Spam Dominan: {stats['spam_keywords_str'] if stats['spam_keywords_str'] else "-"}
+    2. Sampel Spam (Yakin): {stats['spam_samples_str'] if stats['spam_samples_str'] else "-"}
+    3. Sampel Ragu/Ambigu (Perlu Cek): {stats['unsure_samples_str'] if stats['unsure_samples_str'] else "-"}
 
     ATURAN FORMATTING (STRICT):
-    - **DILARANG** menggunakan kalimat pembuka (Contoh: "Berdasarkan data...", "Berikut analisis...", "Halo user").
-    - Output harus **DIMULAI LANGSUNG** dengan simbol bullet point (*).
-    - Hapus semua kata sambung yang tidak perlu. Langsung ke inti fakta.
+    - DILARANG menggunakan kalimat pembuka.
+    - Langsung mulai dengan bullet point (*).
+    - Hapus kata sambung tidak perlu.
 
-    TEMPLATE OUTPUT (Gunakan persis):
-    * **Pola Deteksi**: (Jelaskan trigger kata kunci dan variasi penulisan unik/alay yang ditemukan)
-    * **Modus**: (Jelaskan taktik persuasi, misal: janji maxwin, link di bio, manipulasi testimoni)
-    * **Tingkat Risiko**: (Kesimpulan singkat: Rendah/Sedang/Tinggi dan alasannya)
+    TEMPLATE OUTPUT (Wajib 4 Poin):
+    * **Pola Deteksi**: (Sebutkan keyword utama dan jika ada teknik penyamaran seperti spasi/simbol)
+    * **Modus**: (Jelaskan taktiknya: janji maxwin, link di bio, atau spam massal)
+    * **Analisis Ambigu**: (Cek 'Sampel Ragu'. JIKA isinya berita/edukasi/curhat kalah judi, tegaskan bahwa itu BUKAN promosi. JIKA kosong/promosi samar, tulis "-")
+    * **Kesimpulan Risiko**: (Simpulkan tingkat keparahan: Rendah/Sedang/Tinggi berdasarkan dominasi spam)
 
-    EXCEPTION (Jika data kosong/strip "-"):
+    EXCEPTION (Jika data statistik 0 spam):
     "✅ **Aman:** Tidak ditemukan indikator promosi judi online. Interaksi didominasi diskusi relevan."
     """
 )
