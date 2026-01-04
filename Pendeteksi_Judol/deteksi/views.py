@@ -209,15 +209,24 @@ def index(request):
         results, stats = process_youtube_comments(url, limit=limit)
 
         # --- Generate Insight (Service Call) ---
-        llm_insight, llm_insight_html, meta = generate_insight(url, limit, stats, results)
+        try: 
+            llm_insight, llm_insight_html, meta = generate_insight(url, limit, stats, results)
+            ctx.update({
+                "url": url,
+                "llm_insight": llm_insight,
+                "llm_insight_html": llm_insight_html,
+                })
+        except Exception as e:
+            llm_insight = None
+            llm_insight_html = None
+            meta = None
 
-        ctx.update({"url": url})
+        
         
         ctx.update({
+            "url": url,
             "rows": results,
             "selected_limit": selected_limit,
-            "llm_insight": llm_insight,
-            "llm_insight_html": llm_insight_html,
             "total_comments": stats["total"],
             "judi_count": stats["judi_count"],
             "clean_count": stats["clean_count"],

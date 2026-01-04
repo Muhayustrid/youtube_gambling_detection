@@ -125,27 +125,22 @@ def generate_insight(url, limit, stats, results_sample_check):
         # Fallback Logic
         has_spam = any(item["label"] == 1 for item in results_sample_check)
         if has_spam:
-            top_kw_list = stats.get('top_keywords', [])
-            keywords_str = ', '.join([w for w, _ in top_kw_list[:3]])
+            total = stats['total'] if stats['total'] > 0 else 1
+            ratio = (stats['judi_count'] / total) * 100
             
-            insight_text = f"""## Ringkasan Analisis
-
-                    ### Pola Dominan
-                    - Mayoritas promosi mengandung: **{keywords_str}**
-                    - Banyak pola obfuscation (angka/leet/spacing)
-                    - Ada frasa yang mengarahkan ke link eksternal
-
-                    ### Brand Judi biasanya
-                    - Slot online, Gacor, Bonus, Deposit
-                    - Togel, Pulauwin, Garuda Hoki, Totot
-                    - Live casino
-
-                    """
+            risk_label = "TINGGI" if ratio > 20 else "SEDANG" if ratio > 5 else "RENDAH"
+            
+            insight_text = (
+                f"* **Laporan Deteksi**: Ditemukan **{stats['judi_count']}** komentar promosi judi dari total {stats['total']} komentar ({ratio:.1f}%).\n"
+                f"* **Tingkat Risiko**: **{risk_label}**. Sistem merekomendasikan pemeriksaan manual atau penghapusan pada komentar yang ditandai."
+            )
         else:
-            insight_text = f"""## Hasil Analisis
-            Tidak ada aktivitas spam promosi judi online yang terdeteksi pada komentar video ini. Semua komentar terlihat relevan dan bersih."""
+            insight_text = (
+                f"**Aman:** Tidak ditemukan indikator promosi judi online pada {stats['total']} komentar yang dianalisis."
+            )
         
         llm_insight = insight_text
         llm_insight_html = _format_llm_response(insight_text)
+        meta = {"model": "fallback-stat-only", "status": "ai_failed"}
 
     return llm_insight, llm_insight_html, meta
