@@ -6,7 +6,7 @@ import os
 from django.http import HttpResponse
 
 from deteksi.ml.predict import predict_comment
-from .ml.yt import extract_youtube_video_id
+from .services.youtube import extract_youtube_video_id
 
 from .services.comment_processing import process_youtube_comments
 from .services.ai_insight import generate_insight
