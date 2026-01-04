@@ -182,3 +182,4 @@ cython_debug/
 
 # Flow client secret file
 client_secret.json
+*.json

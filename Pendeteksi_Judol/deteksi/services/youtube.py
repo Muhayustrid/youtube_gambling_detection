@@ -1,4 +1,4 @@
-import os, re
+import os
 from urllib.parse import urlparse, parse_qs
 import requests
 from django.conf import settings
