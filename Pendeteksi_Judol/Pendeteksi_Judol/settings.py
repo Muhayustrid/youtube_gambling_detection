@@ -41,8 +41,31 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'deteksi',
-    
+    'markdownify',
 ]
+
+MARKDOWNIFY = {
+    "default": {
+        "BLEACH": True,
+        "MARKDOWN_EXTENSIONS": [
+            "markdown.extensions.fenced_code",
+            "markdown.extensions.extra",
+            "markdown.extensions.tables",
+            "markdown.extensions.nl2br",
+            "markdown.extensions.sane_lists",
+        ],
+        "WHITELIST_TAGS": [
+            "a", "abbr", "acronym", "b", "blockquote", "code", "em", "i", "li", "ol", "strong", "ul",
+            "p", "br", "hr", "h1", "h2", "h3", "h4", "h5", "h6", "table", "thead", "tbody", "tr", "th", "td", "pre", "span", "div"
+        ],
+        "WHITELIST_ATTRS": {
+            "*": ["class", "style"],
+            "a": ["href", "title", "target"],
+            "img": ["src", "alt", "title", "width", "height"]
+        },
+        "STRIP": False,
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

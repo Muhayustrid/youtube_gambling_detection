@@ -1,6 +1,6 @@
 import os
 import json
-import markdown
+
 from django.utils import timezone
 from django.core.cache import cache
 from ..llm.openrouter_client import call_openrouter_with_fallback
@@ -25,9 +25,9 @@ def _log_llm_call(prompt: str, response: str, meta: dict):
     with open(LLM_LOG_FILE, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
-def _format_llm_response(text: str) -> str:
+def _clean_llm_response(text: str) -> str:
     """
-    Convert markdown to HTML 
+    Clean raw markdown from LLM (remove code blocks)
     """
     if not text:
         return ""
@@ -43,15 +43,7 @@ def _format_llm_response(text: str) -> str:
         if last_code_block_end != -1:
             text = text[3:last_code_block_end].strip()
             
-    html = markdown.markdown(
-        text,
-        extensions=['tables', 'nl2br', 'sane_lists']
-    )
-    
-    html = html.replace('<p><strong>', '<strong>')
-    html = html.replace('</strong></p>', '</strong>')
-    
-    return html
+    return text
 
 def generate_insight(url, limit, stats, results_sample_check):
     """
@@ -66,42 +58,35 @@ def generate_insight(url, limit, stats, results_sample_check):
 
     # Construct prompt
     prompt_text = (
-        f"""
-            Berikut adalah ringkasan hasil klasifikasi komentar YouTube.
+    f"""
+    Tugas: Analisis pola indikasi judi online dan validasi potensi salah deteksi (False Positive).
+    
+    DATA STATISTIK:
+    - Total Komentar: {stats['total']}
+    - Terdeteksi Spam Promosi Judi: {stats['judi_count']}
+    - Terdeteksi Bersih: {stats['clean_count']}
 
-            DATA (ringkas):
-            - Kata kunci spam dominan:
-            {stats['spam_keywords_str']}
+    DATA INPUT:
+    1. Keywords Spam Dominan: {stats['spam_keywords_str'] if stats['spam_keywords_str'] else "-"}
+    2. Sampel Spam (Yakin): {stats['spam_samples_str'] if stats['spam_samples_str'] else "-"}
+    3. Sampel Ragu/Ambigu (Perlu Cek): {stats['unsure_samples_str'] if stats['unsure_samples_str'] else "-"}
 
-            - Kata kunci komentar bersih:
-            {stats['clean_keywords_str']}
+    ATURAN FORMATTING (STRICT):
+    - DILARANG menggunakan kalimat pembuka.
+    - Langsung mulai dengan bullet point (*).
+    - Hapus kata sambung tidak perlu.
 
-            - Contoh spam paling yakin:
-            {stats['spam_samples_str']}
+    TEMPLATE OUTPUT (Wajib 4 Poin):
+    * **Pola Deteksi**: (Sebutkan keyword utama dan jika ada teknik penyamaran seperti spasi/simbol)
+    * **Modus**: (Jelaskan taktiknya: janji maxwin, link di bio, atau spam massal)
+    * **Analisis Ambigu**: (Cek 'Sampel Ragu'. JIKA isinya berita/edukasi/curhat kalah judi, tegaskan bahwa itu BUKAN promosi. JIKA kosong/promosi samar, tulis "-")
+    * **Kesimpulan Risiko**: (Simpulkan tingkat keparahan: Rendah/Sedang/Tinggi berdasarkan dominasi spam)
 
-            - Contoh komentar ragu (40–60%):
-            {stats['unsure_samples_str']}
+    EXCEPTION (Jika data statistik 0 spam):
+    "✅ **Aman:** Tidak ditemukan indikator promosi judi online. Interaksi didominasi diskusi relevan."
+    """
+)
 
-            TUGAS ANDA:
-            Buat **ringkasan insight singkat** untuk ditampilkan di aplikasi web.
-
-            ATURAN WAJIB:
-            - Maksimal **4 bullet point**
-            - Total panjang **maks 120 kata**
-            - Bahasa Indonesia formal-ringkas
-            - TANPA subjudul a/b/c
-            - TANPA paragraf panjang
-            - Fokus hanya pada:
-              1) Pola utama spam
-              2) Brand / nama situs menonjol (jika ada)
-              3) Perbedaan spam vs bersih
-              4) Catatan kehati-hatian model (jika relevan)
-
-            Jika **tidak ada spam signifikan**, tulis:
-            "Komentar video ini didominasi interaksi relevan dan tidak menunjukkan pola promosi judi online."
-
-            Keluarkan langsung dalam format markdown bullet list."""
-    )
 
     messages = [
         {"role": "system", "content": "Anda adalah ahli analisis keamanan digital berbahasa indonesia yang sedang menganalisis spam promosi judi online di komentar platform YouTube."},
@@ -116,11 +101,11 @@ def generate_insight(url, limit, stats, results_sample_check):
     
     if content:
         llm_insight = content.strip()
-        llm_insight_html = _format_llm_response(llm_insight)
+        llm_insight_cleaned = _clean_llm_response(llm_insight)
         
         cache.set(cache_key, {
             "insight": llm_insight,
-            "html": llm_insight_html,
+            "html": llm_insight_cleaned,
             "meta": meta
         }, CACHE_TTL)
         try:
@@ -131,27 +116,22 @@ def generate_insight(url, limit, stats, results_sample_check):
         # Fallback Logic
         has_spam = any(item["label"] == 1 for item in results_sample_check)
         if has_spam:
-            top_kw_list = stats.get('top_keywords', [])
-            keywords_str = ', '.join([w for w, _ in top_kw_list[:3]])
+            total = stats['total'] if stats['total'] > 0 else 1
+            ratio = (stats['judi_count'] / total) * 100
             
-            insight_text = f"""## Ringkasan Analisis
-
-                    ### Pola Dominan
-                    - Mayoritas promosi mengandung: **{keywords_str}**
-                    - Banyak pola obfuscation (angka/leet/spacing)
-                    - Ada frasa yang mengarahkan ke link eksternal
-
-                    ### Brand Judi biasanya
-                    - Slot online, Gacor, Bonus, Deposit
-                    - Togel, Pulauwin, Garuda Hoki, Totot
-                    - Live casino
-
-                    """
+            risk_label = "TINGGI" if ratio > 20 else "SEDANG" if ratio > 5 else "RENDAH"
+            
+            insight_text = (
+                f"* **Laporan Deteksi**: Ditemukan **{stats['judi_count']}** komentar promosi judi dari total {stats['total']} komentar ({ratio:.1f}%).\n"
+                f"* **Tingkat Risiko**: **{risk_label}**. Sistem merekomendasikan pemeriksaan manual atau penghapusan pada komentar yang ditandai."
+            )
         else:
-            insight_text = f"""## Hasil Analisis
-            Tidak ada aktivitas spam promosi judi online yang terdeteksi pada komentar video ini. Semua komentar terlihat relevan dan bersih."""
+            insight_text = (
+                f"**Aman:** Tidak ditemukan indikator promosi judi online pada {stats['total']} komentar yang dianalisis."
+            )
         
         llm_insight = insight_text
-        llm_insight_html = _format_llm_response(insight_text)
+        llm_insight_cleaned = _clean_llm_response(insight_text)
+        meta = {"model": "fallback-stat-only", "status": "ai_failed"}
 
-    return llm_insight, llm_insight_html, meta
+    return llm_insight, llm_insight_cleaned, meta

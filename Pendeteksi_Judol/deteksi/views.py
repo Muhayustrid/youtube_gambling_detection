@@ -4,7 +4,9 @@ from django.conf import settings
 from django.urls import reverse
 import os
 from django.http import HttpResponse
-from .services.youtube import extract_youtube_video_id
+
+from deteksi.ml.predict import predict_comment
+from .ml.yt import extract_youtube_video_id
 
 from .services.comment_processing import process_youtube_comments
 from .services.ai_insight import generate_insight
@@ -30,6 +32,15 @@ def moderate_comments(request):
     
     action = request.POST.get("action")
     
+    block_user = request.POST.get("block_user")
+    
+    block_user_map = {'0': False, '1': True}
+
+    # if block_user == '1':
+    #     block_user = True
+        
+    print(block_user_map.get(block_user, "GAGAL"))
+    
     svc = get_youtube_client_from_session(request.session.get("yt_creds"))
     
     if not svc:
@@ -40,7 +51,7 @@ def moderate_comments(request):
         }, status=401)
 
     try:
-        ok, msg, err_type = perform_moderation_action(svc, comment_ids, action)
+        ok, msg, err_type = perform_moderation_action(svc, comment_ids, action, block_user_map.get(block_user, False))
         if not ok:
              return JsonResponse({
                 "ok": False, 
@@ -198,19 +209,23 @@ def index(request):
         results, stats = process_youtube_comments(url, limit=limit)
 
         # --- Generate Insight (Service Call) ---
-        try:
-            llm_insight, llm_insight_html, meta = generate_insight(url, limit, stats, results)
-            
+        try: 
+            llm_insight, llm_insight_cleaned, meta = generate_insight(url, limit, stats, results)
+            ctx.update({
+                "url": url,
+                "llm_insight": llm_insight_cleaned,
+                })
         except Exception as e:
-            llm_insight = f"Gagal menghasilkan insight: {str(e)}"
-            llm_insight_html = ""
+            llm_insight = None
+            llm_insight_cleaned = None
+            meta = None
+
+        
         
         ctx.update({
             "url": url,
             "rows": results,
             "selected_limit": selected_limit,
-            "llm_insight": llm_insight,
-            "llm_insight_html": llm_insight_html,
             "total_comments": stats["total"],
             "judi_count": stats["judi_count"],
             "clean_count": stats["clean_count"],
@@ -220,4 +235,14 @@ def index(request):
 
     return render(request, "html/index.html", ctx)
 
+def home(request):
+    context = {}
+    if request.method == "POST":
+        text = request.POST.get("comment")
+        result = predict_comment(text)
+        context["text"] = text
+        context["clean"] = result["clean"]
+        context["label"] = "PROMOSI JUDOL" if result["label"] == 1 else "BUKAN"
+        context["proba"] = result["proba"]
+    return render(request, "html/tes.html", context)
 

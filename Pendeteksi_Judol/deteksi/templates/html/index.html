@@ -66,12 +66,68 @@
       <p>Anda akan menghapus <span id="modCountText">0</span> komentar yang dipilih.</p>
       <div class="checkbox-group">
         <input type="checkbox" id="blockUserCheckbox">
-        <label for="blockUserCheckbox">Blokir penulis komentar juga (jika didukung API)</label>
+        <label for="blockUserCheckbox">Blokir pengguna</label>
       </div>
     </div>
     <div class="modal-footer row">
       <button class="btn-cancel" onclick="closeModerationModal()">Batal</button>
       <button class="btn-confirm" id="confirmModerationBtn">Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="errorModal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2 style="color: #ef4444;">Gagal Moderasi</h2>
+    </div>
+    <div class="modal-body">
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+        <img src="{% static 'assets/image/forbidden.svg' %}" alt="Forbidden" width="64" height="64" style="object-fit: contain;">
+        <p id="errorModalMsg" style="font-size: 1.1rem; color: #333;">Terjadi kesalahan.</p>
+      </div>
+    </div>
+    <div class="modal-footer row" style="justify-content: center;">
+      <button class="btn-cancel" onclick="closeErrorModal()" style="width: 100%;">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="successModal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2 style="color: #16a34a;">Berhasil!</h2>
+    </div>
+    <div class="modal-body">
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+           <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <p id="successModalMsg" style="font-size: 1.1rem; color: #333;">Aksi berhasil dilakukan.</p>
+      </div>
+    </div>
+    <div class="modal-footer row" style="justify-content: center;">
+      <button class="btn-confirm" onclick="closeSuccessModal()" style="width: 100%; background-color: #16a34a; border-color: #16a34a;">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Login Required Modal -->
+<div class="modal-overlay hidden" id="loginRequiredModal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2>Login Diperlukan</h2>
+    </div>
+    <div class="modal-body">
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+        <img src="{% static 'assets/image/warning.svg' %}" alt="Warning" width="64" height="64" style="object-fit: contain;">
+        <p style="font-size: 1.1rem; color: #333; font-weight: 500;">Harap login YouTube terlebih dahulu</p>
+        <p style="font-size: 0.9rem; color: #6b7280;">Untuk melakukan moderasi komentar, Anda perlu login dengan akun YouTube terlebih dahulu, Pastikan akun anda memiliki otoritas terhadap video</p>
+      </div>
+    </div>
+    <div class="modal-footer row" style="justify-content: center;">
+      <button class="btn-cancel" onclick="closeLoginRequiredModal()" style="width: 100%;">Tutup</button>
     </div>
   </div>
 </div>
@@ -143,15 +199,42 @@
         }
     }
 
+    // --- Logika Modal Sukses ---
+    const successModal = document.getElementById('successModal');
+    const successMsg = document.getElementById('successModalMsg');
+
+    function openSuccessModal(msg) {
+        if(successMsg) successMsg.innerText = msg;
+        successModal.classList.remove('hidden');
+    }
+
+    function closeSuccessModal() {
+        successModal.classList.add('hidden');
+    }
+
+    // --- Logika Modal Error ---
+    const errModal = document.getElementById('errorModal');
+    const errMsg = document.getElementById('errorModalMsg');
+
+    function openErrorModal(msg) {
+        if(errMsg) errMsg.innerText = msg;
+        errModal.classList.remove('hidden');
+    }
+
+    function closeErrorModal() {
+        errModal.classList.add('hidden');
+    }
+
     // --- Logika Modal Moderasi ---
     const modModal = document.getElementById('moderationModal');
+    const loginRequiredModal = document.getElementById('loginRequiredModal');
     
     function openModerationModal() {
         // Cek login status dari template variable Django
         const isOauthOk = {{ oauth_ok|yesno:"true,false" }};
         
         if(!isOauthOk) {
-            alert("Harap Login YouTube terlebih dahulu untuk melakukan moderasi!");
+            loginRequiredModal.classList.remove('hidden');
             return;
         }
         modModal.classList.remove('hidden');
@@ -159,6 +242,10 @@
 
     function closeModerationModal() {
         modModal.classList.add('hidden');
+    }
+
+    function closeLoginRequiredModal() {
+        loginRequiredModal.classList.add('hidden');
     }
 
     // Handle Tombol "Lanjutkan" di Modal
@@ -178,7 +265,7 @@
             // Buat Form Data
             const formData = new FormData();
             formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-            formData.append('action', 'reject'); // Aksi reject/delete
+            formData.append('action', 'reject'); 
             ids.forEach(id => formData.append('comment_id', id));
 
             // Kirim ke Backend
@@ -186,25 +273,34 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                // Tampilkan notifikasi (alert sederhana untuk sekarang)
-                alert(data.msg || "Proses selesai");
-                
-                // Tutup modal
+            .then(response => {
+                // return object yang berisi status HTTP dan body JSON
+                return response.json().then(data => ({ status: response.status, body: data }));
+            })
+            .then(result => {
+                const data = result.body;
+
+                // Tutup modal konfirmasi dulu
                 closeModerationModal();
-                
-                // Hapus baris tabel yang sudah diproses secara visual
-                checkedBoxes.forEach(cb => cb.closest('tr').remove());
-                
-                // Update ulang statistik FAB & Header Checkbox
-                updateFab();
-                const selectAll = document.getElementById('selectAllCheckbox');
-                if(selectAll) selectAll.checked = false;
+
+                if (data.ok) {
+                    // SUKSES
+                    openSuccessModal(data.msg || "Proses moderasi berhasil diselesaikan!");
+                    
+                    // Hapus baris tabel
+                    checkedBoxes.forEach(cb => cb.closest('tr').remove());
+                    updateFab();
+                    const selectAll = document.getElementById('selectAllCheckbox');
+                    if(selectAll) selectAll.checked = false;
+                } else {
+                    // GAGAL 
+                    openErrorModal(data.msg);
+                }
             })
             .catch(err => {
                 console.error(err);
-                alert("Terjadi kesalahan koneksi.");
+                closeModerationModal();
+                openErrorModal("Terjadi kesalahan koneksi ke server.");
             })
             .finally(() => {
                 // Reset tombol
@@ -215,7 +311,7 @@
     }
 
     // --- INISIALISASI SETELAH HTMX SWAP ---
-    // Karena tabel dimuat via HTMX, kita perlu memastikan fungsi updateFab 
+    // Karena tabel dimuat via HTMX, memastikan fungsi updateFab 
     // dijalankan ulang jika ada checkbox yang checked by default (misal dari server)
     document.body.addEventListener('htmx:afterSwap', function(evt) {
         // Cek jika target swap adalah resultsContainer

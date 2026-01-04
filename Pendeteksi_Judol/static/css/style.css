@@ -691,7 +691,7 @@ body {
 }
 
 .htmx-request .htmx-indicator {
-    display: flex; 
+    display: flex;
     opacity: 1;
 }
 
@@ -702,9 +702,9 @@ body {
 
 /* Inline Validation Styles */
 .input-error {
-    border-color: #dc2626 !important; 
-    background-color: #fef2f2 !important; 
-    animation: shake 0.3s ease-in-out; 
+    border-color: #dc2626 !important;
+    background-color: #fef2f2 !important;
+    animation: shake 0.3s ease-in-out;
 }
 
 .error-message-inline {
@@ -718,7 +718,98 @@ body {
 }
 
 @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-4px); }
-    75% { transform: translateX(4px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-4px);
+    }
+
+    75% {
+        transform: translateX(4px);
+    }
+}
+
+.modal-container {
+    overflow: hidden;
+}
+
+/* Modal Login Required - Custom Style */
+.modal-overlay.hidden#loginRequiredModal .modal-container {
+    animation: scaleIn 0.2s ease-out;
+}
+
+/* Style untuk gambar di modal */
+.modal-body img {
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+/* Modal Error */
+.modal-overlay#errorModal .btn-cancel {
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+}
+
+.modal-overlay#errorModal .modal-header h2 {
+    color: #ef4444;
+}
+
+/* Modal Login Required  */
+
+.modal-overlay#loginRequiredModal .btn-cancel {
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+}
+
+.modal-overlay#loginRequiredModal .btn-cancel:hover {
+    background-color: var(--accent-hover);
+    color: white;
+}
+
+/* Style khusus untuk konten markdown hasil AI */
+.insight-content {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: 0.95rem;
+}
+
+.insight-content p {
+    margin-bottom: 1rem;
+}
+
+.insight-content ul,
+.insight-content ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.insight-content li {
+    margin-bottom: 0.5rem;
+    padding-left: 0.25rem;
+}
+
+.insight-content strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.insight-content h1,
+.insight-content h2,
+.insight-content h3,
+.insight-content h4 {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
 }
