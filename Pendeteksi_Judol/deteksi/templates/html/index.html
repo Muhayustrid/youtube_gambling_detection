@@ -163,13 +163,10 @@
         
         checkboxes.forEach(cb => {
             // HANYA centang baris yang terlihat (tidak disembunyikan filter)
-            // Ini mencegah user tidak sengaja menghapus komentar yang sedang di-filter (hidden)
             if(cb.closest('tr').style.display !== 'none') {
                 cb.checked = source.checked;
             }
         });
-
-        // PENTING: Panggil updateFab() agar tombol langsung muncul/hilang
         updateFab();
     }
 

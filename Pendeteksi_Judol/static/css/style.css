@@ -387,15 +387,23 @@ body {
     color: var(--danger-color) !important;
 }
 
-/* AI Insight Box */
+/* AI Insight Box - Enhanced Design */
 .ai-insight-box {
-    background-color: #f9fafb;
+    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.5rem;
+    border-radius: 16px;
+    padding: 2rem;
     margin-bottom: 2.5rem;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
+}
+
+.ai-insight-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+    border-color: #d1d5db;
 }
 
 .ai-insight-box::before {
@@ -405,30 +413,188 @@ body {
     top: 0;
     width: 4px;
     height: 100%;
-    background-color: var(--accent-color);
+    background: linear-gradient(180deg, var(--accent-color) 0%, #374151 100%);
 }
 
 .insight-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    z-index: 1;
+}
+
+.sparkle-badge {
+    background: linear-gradient(135deg, var(--accent-color) 0%, #374151 100%);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);
+}
+
+.insight-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.insight-title-group h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.insight-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.insight-content {
+    position: relative;
+    z-index: 1;
+    background: white;
+    border-radius: 8px;
+    padding: 1.25rem;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 1rem;
+}
+
+.insight-content p {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.7;
     margin-bottom: 0.75rem;
 }
 
-.sparkle-icon {
-    color: var(--accent-color);
+.insight-content p:last-child {
+    margin-bottom: 0;
 }
 
-.ai-insight-box h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
+.insight-footer {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px dashed #e5e7eb;
 }
 
-.ai-insight-box p {
-    font-size: 1rem;
+.insight-note {
+    font-size: 0.8rem;
     color: var(--text-secondary);
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Enhanced Markdown Content Styling */
+.markdown-content ul {
+    padding-left: 1.25rem;
+    margin: 0.75rem 0;
+    list-style-type: none;
+}
+
+.markdown-content ul li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
     line-height: 1.6;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.markdown-content ul li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--accent-color);
+    font-weight: bold;
+    font-size: 1.2rem;
+    line-height: 1.4;
+}
+
+.markdown-content strong {
+    color: var(--accent-color);
+    font-weight: 600;
+    background: #f3f4f6;
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Special styling for risk levels and status indicators */
+.markdown-content strong[style*="color"] {
+    background: transparent;
+    padding: 0;
+}
+
+.markdown-content strong:contains("TINGGI") {
+    color: var(--danger-color) !important;
+    background: var(--danger-bg);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+}
+
+.markdown-content strong:contains("SEDANG") {
+    color: #d97706 !important;
+    background: #fef3c7;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+}
+
+.markdown-content strong:contains("RENDAH") {
+    color: var(--success-color) !important;
+    background: var(--success-bg);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+}
+
+.markdown-content strong:contains("AMAN") {
+    color: var(--success-color) !important;
+    background: var(--success-bg);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+/* Responsive adjustments for AI insight */
+@media (max-width: 768px) {
+    .ai-insight-box {
+        padding: 1.5rem;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+    
+    .insight-header {
+        gap: 0.75rem;
+    }
+    
+    .sparkle-badge {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .insight-title-group h3 {
+        font-size: 1.1rem;
+    }
+    
+    .insight-content {
+        padding: 1rem;
+    }
 }
 
 .results-header {
@@ -766,13 +932,369 @@ body {
     color: white;
 }
 
-/* Style khusus untuk konten markdown hasil AI */
-.markdown-content ul {
-    padding-left: 20px; 
-    margin-top: 10px;
+/* Notification Styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 10000;
+    animation: slideInRight 0.3s ease-out;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    max-width: 300px;
 }
 
-.markdown-content li {
-    margin-bottom: 8px;
-    line-height: 1.5;  
+.notification.success {
+    background: var(--success-color);
+}
+
+.notification.error {
+    background: var(--danger-color);
+}
+
+.notification.info {
+    background: var(--accent-color);
+}
+
+/* Enhanced AI Insight Styles */
+.markdown-content ul {
+    padding-left: 1.25rem;
+    margin: 0.75rem 0;
+    list-style-type: none;
+}
+
+.markdown-content ul li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.markdown-content ul li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--accent-color);
+    font-weight: bold;
+    font-size: 1.2rem;
+    line-height: 1.4;
+}
+
+.markdown-content strong {
+    color: var(--accent-color);
+    font-weight: 600;
+    background: #f3f4f6;
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Risk Level Highlighting */
+.risk-high {
+    color: var(--danger-color) !important;
+    background: var(--danger-bg);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+.risk-medium {
+    color: #d97706 !important;
+    background: #fef3c7;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.risk-low {
+    color: var(--success-color) !important;
+    background: var(--success-bg);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.risk-safe {
+    color: var(--success-color) !important;
+    background: var(--success-bg);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 1.05em;
+}
+
+/* Interactive Elements */
+.insight-content {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.insight-content:hover {
+    background-color: #f9fafb;
+}
+
+.ai-insight-box {
+    transition: all 0.3s ease;
+}
+
+.fab-container {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+tr.comment-row {
+    transition: background-color 0.3s ease;
+}
+
+/* Animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Enhanced Modal for Moderation */
+.modal-overlay#moderationModal .modal-container {
+    max-width: 450px;
+}
+
+.modal-overlay#moderationModal .modal-body p {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+
+.modal-overlay#moderationModal .btn-confirm {
+    background-color: var(--danger-color);
+    font-weight: 600;
+}
+
+.modal-overlay#moderationModal .btn-confirm:hover {
+    background-color: #b91c1c;
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+    .ai-insight-box {
+        margin-left: -1rem;
+        margin-right: -1rem;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+    
+    .insight-header {
+        gap: 0.75rem;
+    }
+    
+    .sparkle-badge {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .insight-title-group h3 {
+        font-size: 1.1rem;
+    }
+    
+    .insight-content {
+        padding: 1rem;
+    }
+    
+    .summary-dashboard {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .results-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    .filter-group select {
+        flex: 1;
+    }
+}
+
+/* Loading State for AI Insight */
+.ai-insight-box.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.ai-insight-box.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
+    border: 3px solid #f3f4f6;
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Table Row Hover Effects */
+.results-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+.results-table tbody tr.comment-row.gambling:hover {
+    background-color: #fef2f2;
+}
+
+.results-table tbody tr.comment-row.clean:hover {
+    background-color: #ecfdf5;
+}
+
+/* Checkbox Custom Styling */
+.row-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--accent-color);
+}
+
+#selectAllCheckbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--accent-color);
+}
+
+/* FAB Button Enhancement */
+.fab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.25rem;
+    background: linear-gradient(135deg, var(--accent-color) 0%, #374151 100%);
+    color: white;
+    border: none;
+    border-radius: 99px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+.fab-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.fab-count {
+    background: white;
+    color: var(--accent-color);
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Stat Card Pulse Animation */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.stat-card.pulse {
+    animation: pulse 0.3s ease;
+}
+
+/* Fade In Animation Enhancement */
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading Spinner for Table Operations */
+.table-responsive.loading {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.table-responsive.loading::after {
+    content: 'Memproses...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Accessibility Focus Styles */
+button:focus,
+select:focus,
+input:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .ai-insight-box {
+        border-width: 2px;
+    }
+    
+    .insight-content {
+        border-width: 2px;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
