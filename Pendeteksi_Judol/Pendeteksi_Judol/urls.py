@@ -16,12 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from deteksi.views import index, oauth_start, oauth_callback, revoke_and_logout_view, moderate_comments
+from deteksi.views import index, oauth_start, oauth_callback, revoke_and_logout_view, moderate_comments, home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', index, name='index'),
-    # path('cekpreprocess/', home, name='home'),
+    path('preproces/', home, name='home'),
     path("oauth/start/", oauth_start, name="oauth_start"),
     path("oauth/callback/", oauth_callback, name="oauth_callback"),
     path("moderate/", moderate_comments, name="moderate_comments"),

@@ -1,0 +1,37 @@
+/* AI Insight Markdown Styling */
+.insight-content {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: 0.95rem;
+}
+
+.insight-content p {
+    margin-bottom: 1rem;
+}
+
+.insight-content ul,
+.insight-content ol {
+    margin-bottom: 1rem;
+    padding-left: 1.25rem;
+}
+
+.insight-content li {
+    margin-bottom: 0.5rem;
+    padding-left: 0.25rem;
+}
+
+.insight-content strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.insight-content h1,
+.insight-content h2,
+.insight-content h3,
+.insight-content h4 {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+}
