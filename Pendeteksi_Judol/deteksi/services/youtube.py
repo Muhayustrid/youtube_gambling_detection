@@ -7,27 +7,19 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+# ===== KONFIGURASI UTAMA =====
 SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
-
-# Fungsi youtube API key dari variabel lingkungan
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")  
 youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
+# ===== END KONFIGURASI UTAMA =====
 
-def extract_video_id(link: str) -> str:
-    u = urlparse(link)
-    if u.netloc in ("youtu.be", "www.youtu.be"):
-        return u.path.lstrip("/")
-    qs = parse_qs(u.query)
-    return qs.get("v", [""])[0]
-
-
+# ===== FUNGSI EKSTRAKSI VIDEO ID =====
 def extract_youtube_video_id(url: str) -> str | None:
     """
     Mengekstrak video ID dari berbagai format URL YouTube.
     Mengembalikan None jika URL tidak valid atau ID tidak ditemukan.
     """
     try:
-        # Pastikan URL adalah string
         if not isinstance(url, str) or not url:
             return None
 
@@ -35,7 +27,6 @@ def extract_youtube_video_id(url: str) -> str | None:
         
         # Cek domain youtu.be
         if u.netloc in ("youtu.be", "www.youtu.be"):
-            # ID ada di path, contoh: /cBVGlBWQzuc
             return u.path.lstrip("/")
 
         # Cek domain youtube.com
@@ -47,7 +38,6 @@ def extract_youtube_video_id(url: str) -> str | None:
             # Cek format URL /watch
             if u.path == "/watch":
                 qs = parse_qs(u.query)
-                # qs.get("v") mengembalikan list, jadi ambil elemen pertama
                 video_id = qs.get("v", [None])[0]
                 return video_id
 
@@ -55,14 +45,13 @@ def extract_youtube_video_id(url: str) -> str | None:
             if "/embed/" in u.path:
                 return u.path.split("/embed/")[1].split("?")[0]
 
-        # Jika tidak ada yang cocok, kembalikan None
         return None
 
     except Exception:
-        # Tangani error parsing yang tidak terduga
         return None
-    
-    
+# ===== END FUNGSI EKSTRAKSI VIDEO ID =====
+
+# ===== FUNGSI PENGAMBILAN KOMENTAR =====
 def fetch_all_comment_threads(video_id: str, max_total: int = 200):
     items, page_token = [], None
     try:
@@ -156,10 +145,95 @@ def collect_comments(link: str, limit: int = 100):
     if len(rows) > limit:
         rows = rows[:limit]
     return rows
+# ===== END FUNGSI PENGAMBILAN KOMENTAR =====
 
+# ===== FUNGSI EKSTRAKSI CHANNEL =====
+def extract_channel_info(input_str: str):
+    """
+    Mengembalikan tuple (tipe, value).
+    tipe: 'video', 'channel_id', 'handle', atau None
+    """
+    input_str = input_str.strip()
+    
+    # Cek jika input adalah Handle (contoh: @WindahBasudara)
+    if input_str.startswith("@"):
+        return "handle", input_str
+        
+    u = urlparse(input_str)
+    
+    # Cek URL Video biasa
+    if "watch" in u.path:
+        return "video", extract_youtube_video_id(input_str)
+    if "youtu.be" in u.netloc:
+        return "video", extract_youtube_video_id(input_str)
+        
+    # Cek URL Channel / Handle
+    path_parts = u.path.strip("/").split("/")
+    
+    if len(path_parts) >= 1:
+        if path_parts[0].startswith("@"):
+            return "handle", path_parts[0] # @username
+        if path_parts[0] == "channel" and len(path_parts) > 1:
+            return "channel_id", path_parts[1] 
+        if path_parts[0] == "c" and len(path_parts) > 1:
+            return "handle", path_parts[1] 
 
-# --- OAuth & Moderation Helpers ---
+    return None, None
+# ===== END FUNGSI EKSTRAKSI CHANNEL =====
 
+# ===== FUNGSI PLAYLIST & CHANNEL INFO =====
+def get_channel_uploads_playlist(identifier, id_type):
+    """
+    Mendapatkan ID Playlist 'Uploads' dari channel.
+    Cost: 1 Unit.
+    """
+    try:
+        if id_type == "handle":
+            resp = youtube.channels().list(
+                part="contentDetails",
+                forHandle=identifier
+            ).execute()
+        elif id_type == "channel_id":
+            resp = youtube.channels().list(
+                part="contentDetails",
+                id=identifier
+            ).execute()
+        else:
+            return None
+
+        if not resp.get("items"):
+            return None
+            
+        # Ambil ID playlist uploads
+        return resp["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+    except HttpError as e:
+        print(f"Error fetching channel: {e}")
+        return None
+
+def get_videos_from_playlist(playlist_id, limit=5):
+    """
+    Mengambil daftar video ID dari playlist.
+    Cost: 1 Unit.
+    """
+    video_ids = []
+    try:
+        resp = youtube.playlistItems().list(
+            part="contentDetails",
+            playlistId=playlist_id,
+            maxResults=limit
+        ).execute()
+        
+        for item in resp.get("items", []):
+            vid = item["contentDetails"]["videoId"]
+            video_ids.append(vid)
+            
+    except HttpError as e:
+        print(f"Error fetching playlist items: {e}")
+        
+    return video_ids
+# ===== END FUNGSI PLAYLIST & CHANNEL INFO =====
+
+# ===== FUNGSI OAUTH & MODERASI =====
 def get_youtube_client_from_session(yt_creds):
     """
     Membuat instance YouTube client (OAuth) dari dictionary credentials session.
@@ -276,4 +350,4 @@ def perform_moderation_action(service, comment_ids, action, block_user):
         
     else:
         return False, "Aksi tidak dikenal", "invalid_action"
-
+# ===== END FUNGSI OAUTH & MODERASI =====

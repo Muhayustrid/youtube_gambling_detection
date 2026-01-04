@@ -2,17 +2,17 @@ from ..services.youtube import collect_comments, extract_youtube_video_id
 from ..ml.predict import predict_comment
 from ..ml.utils_text import top_keywords_from_texts
 
-def process_youtube_comments(url, limit=100):
+# ===== FUNGSI PEMROSESAN KOMENTAR =====
+def process_raw_comments(rows):
     """
-    Mengambil komentar, melakukan prediksi, dan menghitung statistik dasar.
+    Memproses daftar komentar raw (list of dict) menjadi hasil prediksi dan statistik.
+    Helper ini dipisahkan agar bisa digunakan untuk data gabungan dari banyak video.
+    Returns: (results, stats)
     """
-    # 1. Validasi URL (dilakukan di view/controller, tapi helper ini bisa return None/Error jika perlu)
-    
-    # 2. Ambil komentar
-    rows = collect_comments(url, limit=limit)
-
-    # 3. Prediksi
     results = []
+    
+    # Batch predict (optimalisasi: jika model support batch, lakukan di sini. 
+    # Saat ini loop satu per satu sesuai existing logic)
     for r in rows:
         pred = predict_comment(r["text"])
         results.append({
@@ -22,7 +22,7 @@ def process_youtube_comments(url, limit=100):
             "proba": pred["proba"],
         })
 
-    # 4. Hitung Statistik
+    # Hitung Statistik
     total_comments = len(results)
     judi_count = sum(1 for item in results if item["label"] == 1)
     clean_count = total_comments - judi_count
@@ -36,26 +36,23 @@ def process_youtube_comments(url, limit=100):
     top_keywords_negative = top_keywords_from_texts(negative_cleans, top_n=30)
 
     # Samples
-    # Spam confidence tinggi
     high_confidence_spam = sorted(
         [r for r in results if r["label"] == 1], 
         key=lambda x: x["proba"], 
         reverse=True)[:7]
     
-    # Ragu (Unsure)
     unsure_comments = sorted(
         [r for r in results if 0.40 <= r["proba"] <= 0.60], 
         key=lambda x: x["proba"], 
         reverse=True)[:10]
 
-    # Clean samples
     sample_clean_comments = [r["text"] for r in results if r["label"] == 0][:3]
 
-    # Formatting strings for LLM or Display
+    # Formatting strings
     unsure_samples_str = "\n".join([f"- {c['text']} (Probabilitas: {c['proba']:.2%})" for c in unsure_comments])
     spam_keywords_str = "\n".join([f"- {w}: {c}" for w, c in top_keywords[:15]])
     clean_keywords_str = "\n".join([f"- {w}: {c}" for w, c in top_keywords_negative[:10]])
-    spam_samples_str = "\n".join([f"- {c['text']}" for c in high_confidence_spam]) # Note: original code used c["text"]
+    spam_samples_str = "\n".join([f"- {c['text']}" for c in high_confidence_spam])
     clean_samples_str = "\n".join([f"- {c}" for c in sample_clean_comments])
 
     stats = {
@@ -74,3 +71,14 @@ def process_youtube_comments(url, limit=100):
     }
 
     return results, stats
+
+def process_youtube_comments(url, limit=100):
+    """
+    Mengambil komentar dari satu video, lalu memprosesnya.
+    """
+    # 1. Ambil komentar
+    rows = collect_comments(url, limit=limit)
+    
+    # 2. Proses
+    return process_raw_comments(rows)
+# ===== END FUNGSI PEMROSESAN KOMENTAR =====

@@ -4,42 +4,32 @@ from django.conf import settings
 from django.urls import reverse
 import os
 from django.http import HttpResponse
-
 from deteksi.ml.predict import predict_comment
-from .services.youtube import extract_youtube_video_id
-
-from .services.comment_processing import process_youtube_comments
+from .services.comment_processing import process_youtube_comments, process_raw_comments
 from .services.ai_insight import generate_insight
 from .services.youtube import (
     get_youtube_client_from_session,
     create_oauth_flow,
     fetch_youtube_user_info_oauth,
     revoke_youtube_token,
-    perform_moderation_action
+    perform_moderation_action,
+    extract_youtube_video_id,
+    extract_channel_info,
+    get_channel_uploads_playlist,
+    get_videos_from_playlist,
+    collect_comments
 )
 from googleapiclient.errors import HttpError
 
-# Create your views here.
-
-
-
-# Fungsi Aksi Moderasi Komentar YouTube
+# ===== FUNGSI MODERASI =====
 def moderate_comments(request):
     if request.method != "POST":
         return HttpResponseForbidden("POST only")
 
     comment_ids = request.POST.getlist("comment_id")
-    
     action = request.POST.get("action")
-    
     block_user = request.POST.get("block_user")
-    
     block_user_map = {'0': False, '1': True}
-
-    # if block_user == '1':
-    #     block_user = True
-        
-    print(block_user_map.get(block_user, "GAGAL"))
     
     svc = get_youtube_client_from_session(request.session.get("yt_creds"))
     
@@ -66,11 +56,9 @@ def moderate_comments(request):
         })
         
     except HttpError as e:
-        # ✅ Handle YouTube API Error
         error_details = e.error_details[0] if e.error_details else {}
         reason = error_details.get('reason', 'unknown')
         
-        # Pesan error 
         if reason == 'processingFailure':
             msg = "Anda tidak memiliki izin untuk moderasi komentar di video ini. Pastikan Anda adalah pemilik channel/video."
             error_type = "no_permission"
@@ -97,11 +85,11 @@ def moderate_comments(request):
             "msg": f"Terjadi kesalahan: {str(e)}",
             "error_type": "server_error"
         }, status=500)
-        
-# end fungsi moderasi
+# ===== END FUNGSI MODERASI =====
 
-# Fungsi OAuth YouTube
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+# ===== FUNGSI OAUTH =====
+if settings.DEBUG:
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 def oauth_start(request):
     flow = create_oauth_flow(
@@ -147,17 +135,11 @@ def revoke_and_logout_view(request):
         revoke_youtube_token(token_to_revoke)
 
     request.session.pop('yt_creds', None)
-    # request.session.pop('yt_user', None)
     
     return redirect('index')
+# ===== END FUNGSI OAUTH =====
 
-# end fungsi OAuth
-
-
-
-
-# Fungsi Analisis Komentar YouTube
-
+# ===== FUNGSI ANALISIS =====
 def index(request):
     yt_creds = request.session.get("yt_creds")
     oauth_ok = yt_creds is not None
@@ -171,15 +153,66 @@ def index(request):
     if request.method == "POST":
         url = (request.POST.get("url") or "").strip()
         selected_limit = (request.POST.get("limit") or "")
+        
         try:
             limit = int(selected_limit)
         except (ValueError, TypeError):
             limit = 100
+
+        try:
+            video_count_param = int(request.POST.get("video_count") or 5)
+        except:
+            video_count_param = 5
+            
+        try:
+            comments_per_video_param = int(request.POST.get("comments_per_video") or limit)
+        except:
+            comments_per_video_param = limit
         
-        # Validasi url
-        video_id = extract_youtube_video_id(url)
-        if not video_id:
-            error_msg = "Link tidak valid. Mohon masukkan URL video YouTube yang benar."
+        # Detect Input Type
+        id_type, identifier = extract_channel_info(url)
+        
+        results = []
+        stats = {}
+        error_msg = None
+        
+        if id_type == "video":
+            if not identifier:
+                 error_msg = "URL Video tidak valid."
+            else:
+                video_url = f"https://www.youtube.com/watch?v={identifier}"
+                results, stats = process_youtube_comments(video_url, limit=limit)
+            
+        elif id_type in ("handle", "channel_id"):
+            # Fetch Channel Uploads
+            playlist_id = get_channel_uploads_playlist(identifier, id_type)
+            if not playlist_id:
+                error_msg = "Channel tidak ditemukan atau tidak memiliki playlist Uploads publik."
+            else:
+                # Fetch Videos from Playlist
+                video_ids = get_videos_from_playlist(playlist_id, limit=video_count_param)
+                
+                if not video_ids:
+                    error_msg = "Tidak ditemukan video pada channel ini."
+                else:
+                    all_raw_comments = []
+                    # Collecting comments
+                    for vid in video_ids:
+                        v_url = f"https://www.youtube.com/watch?v={vid}"
+                        batch = collect_comments(v_url, limit=comments_per_video_param)
+                        all_raw_comments.extend(batch)
+                    
+                    if not all_raw_comments:
+                        error_msg = f"Tidak ada komentar ditemukan dari {len(video_ids)} video terakhir."
+                    else:
+                        # Process Aggregated Comments
+                        results, stats = process_raw_comments(all_raw_comments)
+
+        else:
+            error_msg = "Link tidak valid. Masukkan URL video, Channel ID, atau Handle (@username)."
+
+        # Error Handling
+        if error_msg:
             ctx.update({
                 "error_message": error_msg,
                 "url": url, 
@@ -205,10 +238,7 @@ def index(request):
                 return HttpResponse(htmx_response)
             return render(request, "html/index.html", ctx)
         
-        # --- Proses Komentar (Service Call) ---
-        results, stats = process_youtube_comments(url, limit=limit)
-
-        # --- Generate Insight (Service Call) ---
+        # Generate Insight (Service Call)
         try: 
             llm_insight, llm_insight_cleaned, meta = generate_insight(url, limit, stats, results)
             ctx.update({
@@ -220,7 +250,6 @@ def index(request):
             llm_insight_cleaned = None
             meta = None
 
-        
         
         ctx.update({
             "url": url,
@@ -234,7 +263,9 @@ def index(request):
             return render(request, "html/partials/results_partial.html", ctx)
 
     return render(request, "html/index.html", ctx)
+# ===== END FUNGSI ANALISIS =====
 
+# ===== FUNGSI TESTING =====
 def home(request):
     context = {}
     if request.method == "POST":
@@ -245,4 +276,4 @@ def home(request):
         context["label"] = "PROMOSI JUDOL" if result["label"] == 1 else "BUKAN"
         context["proba"] = result["proba"]
     return render(request, "html/tes.html", context)
-
+# ===== END FUNGSI TESTING =====

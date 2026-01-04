@@ -2,32 +2,34 @@
 {% load static %}
 
 {% block content %}
+<!-- ===== HERO SECTION ===== -->
 <div class="hero-section">
   <h1>Analisis Komentar</h1>
-  <p class="subtitle">Deteksi promosi judi online pada komentar YouTube secara otomatis menggunakan Logistic Regression
-  </p>
+  <p class="subtitle">Deteksi promosi judi online pada komentar YouTube secara otomatis menggunakan Logistic Regression</p>
 </div>
+<!-- ===== END HERO SECTION ===== -->
 
-<form class="analysis-container" hx-post="{% url 'index' %}" hx-target="#resultsContainer"
-  hx-indicator="#loadingState" hx-swap="innerHTML">
+<!-- ===== FORM ANALISIS ===== -->
+<form class="analysis-container" hx-post="{% url 'index' %}" hx-target="#resultsContainer" hx-indicator="#loadingState" hx-swap="innerHTML">
 
   {% csrf_token %}
 
+  <!-- Input URL -->
   <div class="input-group">
-    <label for="urlInput">YouTube URL</label>
-
-    <input type="text" name="url" id="urlInput" placeholder="https://www.youtube.com/watch?v=..." spellcheck="false"
-      required value="{{ url|default:'' }}"
+    <label for="urlInput">YouTube URL / Channel / Username</label>
+    <input type="text" name="url" id="urlInput" 
+      placeholder="Contoh: https://youtube.com/watch?v=... atau @WindahBasudara" 
+      spellcheck="false" required value="{{ url|default:'' }}"
       oninput="this.classList.remove('input-error'); document.getElementById('urlInlineError').innerHTML = '';">
-
     <div id="urlInlineError"></div>
   </div>
 
-  <div class="input-group">
-    <label for="maxResults">Max Results</label>
+  <!-- Input Video Mode -->
+  <div class="input-group" id="videoInputContainer">
+    <label for="maxResults">Total Komentar Diambil</label>
     <select name="limit" id="maxResults">
       <option value="20" {% if selected_limit == "20" %}selected{% endif %}>20 Komentar</option>
-      <option value="50" {% if selected_limit == "50" %}selected{% endif %}>50 Komentar</option>
+      <option value="50" {% if selected_limit == "50" %}selected{% endif %}>50 Komentar (Default)</option>
       <option value="100" {% if selected_limit == "100" %}selected{% endif %}>100 Komentar</option>
       <option value="200" {% if selected_limit == "200" %}selected{% endif %}>200 Komentar</option>
       <option value="500" {% if selected_limit == "500" %}selected{% endif %}>500 Komentar</option>
@@ -35,28 +37,58 @@
     </select>
   </div>
 
+  <!-- Input Channel Mode -->
+  <div class="input-group hidden" id="channelInputContainer">
+    <label for="videoCount">Analisis Video Terakhir</label>
+    <select name="video_count" id="videoCount" disabled>
+      <option value="3">3 Video Terbaru</option>
+      <option value="5" selected>5 Video Terbaru (Default)</option>
+      <option value="10">10 Video Terbaru</option>
+    </select>
+  </div>
+
+  <div class="input-group hidden" id="commentsPerVideoContainer">
+    <label for="commentsPerVideo">Sampel Komentar per Video</label>
+    <select name="comments_per_video" id="commentsPerVideo" disabled>
+      <option value="20">20 Komentar</option>
+      <option value="50" selected>50 Komentar (Default)</option>
+      <option value="100">100 Komentar</option>
+    </select>
+    <small style="color: #6b7280; font-size: 0.8rem; margin-top: 4px; display: block;">
+      *Total = (Jml Video) x (Komentar per Video)
+    </small>
+  </div>
+
   <button type="submit" class="btn-analyze" id="analyzeBtn">
-    Analisis
+    Mulai Analisis
   </button>
 </form>
+<!-- ===== END FORM ANALISIS ===== -->
 
+<!-- ===== LOADING STATE ===== -->
 <div class="loading-state htmx-indicator" id="loadingState">
   <div class="spinner"></div>
   <p>Sedang mengambil komentar, melakukan preprocessing, dan prediksi ML...</p>
 </div>
+<!-- ===== END LOADING STATE ===== -->
 
+<!-- ===== HASIL ANALISIS ===== -->
 <div class="results-section" id="resultsContainer">
   {% if rows %}
-  {% include 'html/partials/results_partial.html' %}
+    {% include 'html/partials/results_partial.html' %}
   {% endif %}
 </div>
+<!-- ===== END HASIL ANALISIS ===== -->
 
+<!-- ===== FAB MODERASI ===== -->
 <div class="fab-container hidden" id="fabContainer">
   <button class="fab-btn" id="fabBtn" onclick="openModerationModal()">
     Moderasi Komentar Terpilih (<span id="fabCount">0</span>)
   </button>
 </div>
+<!-- ===== END FAB MODERASI ===== -->
 
+<!-- ===== MODAL MODERASI ===== -->
 <div class="modal-overlay hidden" id="moderationModal">
   <div class="modal-container">
     <div class="modal-header">
@@ -65,7 +97,7 @@
     <div class="modal-body">
       <p>Anda akan menghapus <span id="modCountText">0</span> komentar yang dipilih.</p>
       <div class="checkbox-group">
-        <input type="checkbox" id="blockUserCheckbox">
+        <input type="checkbox" id="blockUserCheckbox" name="block_user" value="1">
         <label for="blockUserCheckbox">Blokir pengguna</label>
       </div>
     </div>
@@ -75,249 +107,293 @@
     </div>
   </div>
 </div>
+<!-- ===== END MODAL MODERASI ===== -->
 
+<!-- ===== MODAL ERROR ===== -->
 <div class="modal-overlay hidden" id="errorModal">
   <div class="modal-container">
     <div class="modal-header">
       <h2 style="color: #ef4444;">Gagal Moderasi</h2>
     </div>
     <div class="modal-body">
-      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
-        <img src="{% static 'assets/image/forbidden.svg' %}" alt="Forbidden" width="64" height="64" style="object-fit: contain;">
-        <p id="errorModalMsg" style="font-size: 1.1rem; color: #333;">Terjadi kesalahan.</p>
-      </div>
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+            <img src="{% static 'assets/image/forbidden.svg' %}" alt="Forbidden" width="64" height="64" style="object-fit: contain;">
+            <p id="errorModalMsg" style="font-size: 1.1rem; color: #333;">Terjadi kesalahan.</p>
+        </div>
     </div>
     <div class="modal-footer row" style="justify-content: center;">
       <button class="btn-cancel" onclick="closeErrorModal()" style="width: 100%;">Tutup</button>
     </div>
   </div>
 </div>
+<!-- ===== END MODAL ERROR ===== -->
 
+<!-- ===== MODAL SUCCESS ===== -->
 <div class="modal-overlay hidden" id="successModal">
   <div class="modal-container">
     <div class="modal-header">
       <h2 style="color: #16a34a;">Berhasil!</h2>
     </div>
     <div class="modal-body">
-      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-           <polyline points="22 4 12 14.01 9 11.01"></polyline>
-        </svg>
-        <p id="successModalMsg" style="font-size: 1.1rem; color: #333;">Aksi berhasil dilakukan.</p>
-      </div>
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <p id="successModalMsg" style="font-size: 1.1rem; color: #333;">Aksi berhasil dilakukan.</p>
+        </div>
     </div>
     <div class="modal-footer row" style="justify-content: center;">
       <button class="btn-confirm" onclick="closeSuccessModal()" style="width: 100%; background-color: #16a34a; border-color: #16a34a;">OK</button>
     </div>
   </div>
 </div>
+<!-- ===== END MODAL SUCCESS ===== -->
 
-<!-- Login Required Modal -->
+<!-- ===== MODAL LOGIN REQUIRED ===== -->
 <div class="modal-overlay hidden" id="loginRequiredModal">
-  <div class="modal-container">
-    <div class="modal-header">
-      <h2>Login Diperlukan</h2>
-    </div>
-    <div class="modal-body">
-      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
-        <img src="{% static 'assets/image/warning.svg' %}" alt="Warning" width="64" height="64" style="object-fit: contain;">
-        <p style="font-size: 1.1rem; color: #333; font-weight: 500;">Harap login YouTube terlebih dahulu</p>
-        <p style="font-size: 0.9rem; color: #6b7280;">Untuk melakukan moderasi komentar, Anda perlu login dengan akun YouTube terlebih dahulu, Pastikan akun anda memiliki otoritas terhadap video</p>
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2>Login Diperlukan</h2>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+            <img src="{% static 'assets/image/warning.svg' %}" alt="Warning" width="64" height="64" style="object-fit: contain;">
+            <p style="font-size: 1.1rem; color: #333; font-weight: 500;">Harap login YouTube terlebih dahulu</p>
+            <p style="font-size: 0.9rem; color: #6b7280;">Untuk melakukan moderasi komentar, Anda perlu login dengan akun YouTube terlebih dahulu.</p>
+        </div>
+      </div>
+      <div class="modal-footer row" style="justify-content: center;">
+        <button class="btn-cancel" onclick="closeLoginRequiredModal()" style="width: 100%;">Tutup</button>
       </div>
     </div>
-    <div class="modal-footer row" style="justify-content: center;">
-      <button class="btn-cancel" onclick="closeLoginRequiredModal()" style="width: 100%;">Tutup</button>
-    </div>
-  </div>
 </div>
+<!-- ===== END MODAL LOGIN REQUIRED ===== -->
+
 {% endblock %}
 
 {% block script %}
+<!-- ===== JAVASCRIPT LOGIC ===== -->
 <script>
-    // --- JavaScript Global untuk Interaksi Tabel ---
+// ===== INISIALISASI SETELAH HALAMAN DIMUAT =====
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("Script Loaded & Ready");
 
-    // 1. Fungsi Filter Tabel (Client Side)
-    function filterTable(value) {
-        const rows = document.querySelectorAll('.comment-row');
-        rows.forEach(row => {
-            if (value === 'all') {
-                row.style.display = '';
-            } else {
-                // Tampilkan jika dataset type sesuai pilihan
-                row.style.display = (row.dataset.type === value) ? '' : 'none';
-            }
-        });
-        // Reset checkbox "Select All" saat filter berubah
-        const selectAll = document.getElementById('selectAllCheckbox');
-        if(selectAll) selectAll.checked = false;
-        
-        // Update FAB karena jumlah item terlihat mungkin berubah
-        updateFab(); 
-    }
-
-    // 2. Fungsi Select All (Perbaikan Bug Header)
-    function toggleAll(source) {
-        // Ambil semua checkbox baris
-        const checkboxes = document.querySelectorAll('.row-checkbox');
-        
-        checkboxes.forEach(cb => {
-            // HANYA centang baris yang terlihat (tidak disembunyikan filter)
-            // Ini mencegah user tidak sengaja menghapus komentar yang sedang di-filter (hidden)
-            if(cb.closest('tr').style.display !== 'none') {
-                cb.checked = source.checked;
-            }
-        });
-
-        // PENTING: Panggil updateFab() agar tombol langsung muncul/hilang
-        updateFab();
-    }
-
-    // 3. Fungsi Update FAB (Perbaikan Bug Floating Button)
-    function updateFab() {
-        // Hitung checkbox yang dicentang DAN terlihat
-        // Kita gunakan selector :checked
-        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-        const checkedCount = checkedBoxes.length;
-
-        // Update angka di tombol FAB
-        const fabCount = document.getElementById('fabCount');
-        if(fabCount) fabCount.innerText = checkedCount;
-
-        // Update angka di Modal Konfirmasi
-        const modCount = document.getElementById('modCountText');
-        if(modCount) modCount.innerText = checkedCount;
-        
-        // Tampilkan/Sembunyikan Container FAB
-        const fabContainer = document.getElementById('fabContainer');
-        if (fabContainer) {
-            if (checkedCount > 0) {
-                fabContainer.classList.remove('hidden');
-            } else {
-                fabContainer.classList.add('hidden');
-            }
-        }
-    }
-
-    // --- Logika Modal Sukses ---
-    const successModal = document.getElementById('successModal');
-    const successMsg = document.getElementById('successModalMsg');
-
-    function openSuccessModal(msg) {
-        if(successMsg) successMsg.innerText = msg;
-        successModal.classList.remove('hidden');
-    }
-
-    function closeSuccessModal() {
-        successModal.classList.add('hidden');
-    }
-
-    // --- Logika Modal Error ---
-    const errModal = document.getElementById('errorModal');
-    const errMsg = document.getElementById('errorModalMsg');
-
-    function openErrorModal(msg) {
-        if(errMsg) errMsg.innerText = msg;
-        errModal.classList.remove('hidden');
-    }
-
-    function closeErrorModal() {
-        errModal.classList.add('hidden');
-    }
-
-    // --- Logika Modal Moderasi ---
-    const modModal = document.getElementById('moderationModal');
-    const loginRequiredModal = document.getElementById('loginRequiredModal');
+    // --- Definisi Elemen Form ---
+    const urlInput = document.getElementById('urlInput');
+    const videoInputContainer = document.getElementById('videoInputContainer');
+    const channelInputContainer = document.getElementById('channelInputContainer');
+    const commentsPerVideoContainer = document.getElementById('commentsPerVideoContainer');
     
-    function openModerationModal() {
-        // Cek login status dari template variable Django
-        const isOauthOk = {{ oauth_ok|yesno:"true,false" }};
-        
-        if(!isOauthOk) {
-            loginRequiredModal.classList.remove('hidden');
-            return;
+    // Elemen Input Select
+    const maxResultsSelect = document.getElementById('maxResults');
+    const videoCountSelect = document.getElementById('videoCount');
+    const commentsPerVideoSelect = document.getElementById('commentsPerVideo');
+
+    // --- Fungsi Deteksi Tipe URL ---
+    function detectUrlType(url) {
+        if (!url) return 'unknown';
+        if (url.includes('@') || url.includes('/channel/') || url.includes('/c/') || url.includes('/user/')) {
+            return 'channel';
         }
-        modModal.classList.remove('hidden');
+        else if (url.includes('watch?v=') || url.includes('youtu.be') || url.includes('/shorts/')) {
+            return 'video';
+        }
+        return 'unknown';
     }
 
-    function closeModerationModal() {
-        modModal.classList.add('hidden');
+    // --- Fungsi Toggle Tampilan Form ---
+    function toggleInputFields() {
+        const url = urlInput.value.trim();
+        const urlType = detectUrlType(url);
+        
+        console.log("Input berubah, Tipe:", urlType); 
+
+        if (urlType === 'channel') {
+            // MODE CHANNEL: Tampilkan input khusus channel
+            videoInputContainer.classList.add('hidden');
+            channelInputContainer.classList.remove('hidden');
+            commentsPerVideoContainer.classList.remove('hidden');
+
+            // Aktifkan select channel, Matikan select video
+            if(maxResultsSelect) maxResultsSelect.disabled = true;
+            if(videoCountSelect) videoCountSelect.disabled = false;
+            if(commentsPerVideoSelect) commentsPerVideoSelect.disabled = false;
+
+        } else {
+            // MODE VIDEO (Default): Tampilkan input video biasa
+            videoInputContainer.classList.remove('hidden');
+            channelInputContainer.classList.add('hidden');
+            commentsPerVideoContainer.classList.add('hidden');
+
+            // Aktifkan select video, Matikan select channel
+            if(maxResultsSelect) maxResultsSelect.disabled = false;
+            if(videoCountSelect) videoCountSelect.disabled = true;
+            if(commentsPerVideoSelect) commentsPerVideoSelect.disabled = true;
+        }
     }
 
-    function closeLoginRequiredModal() {
-        loginRequiredModal.classList.add('hidden');
+    // --- Pasang Event Listener ---
+    if (urlInput) {
+        urlInput.addEventListener('input', toggleInputFields);
+        urlInput.addEventListener('change', toggleInputFields);
+        // Jalankan sekali saat load untuk handle nilai awal (misal setelah error)
+        toggleInputFields();
     }
 
-    // Handle Tombol "Lanjutkan" di Modal
+    // --- Re-inisialisasi FAB saat load ---
+    updateFab();
+
+    // Event Listener Moderasi (Dipindah ke dalam DOMContentLoaded agar aman)
     const confirmBtn = document.getElementById('confirmModerationBtn');
-    if(confirmBtn) {
-        confirmBtn.addEventListener('click', function() {
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function () {
             const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
             const ids = Array.from(checkedBoxes).map(cb => cb.value);
-            
-            if(ids.length === 0) return;
 
-            // UI Loading state
+            if (ids.length === 0) return;
+
+            // UI Loading
             const originalText = this.innerHTML;
             this.innerHTML = 'Memproses...';
             this.disabled = true;
 
-            // Buat Form Data
+            // Data Blokir User
+            const blockUserCheckbox = document.getElementById('blockUserCheckbox');
+            const blockUserVal = blockUserCheckbox && blockUserCheckbox.checked ? '1' : '0';
+
             const formData = new FormData();
             formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-            formData.append('action', 'reject'); 
+            formData.append('action', 'reject'); // atau 'delete' sesuai backend
+            formData.append('block_user', blockUserVal);
             ids.forEach(id => formData.append('comment_id', id));
 
-            // Kirim ke Backend
             fetch("{% url 'moderate_comments' %}", {
                 method: 'POST',
                 body: formData
             })
-            .then(response => {
-                // return object yang berisi status HTTP dan body JSON
-                return response.json().then(data => ({ status: response.status, body: data }));
-            })
+            .then(res => res.json().then(data => ({ status: res.status, body: data })))
             .then(result => {
-                const data = result.body;
-
-                // Tutup modal konfirmasi dulu
                 closeModerationModal();
-
-                if (data.ok) {
-                    // SUKSES
-                    openSuccessModal(data.msg || "Proses moderasi berhasil diselesaikan!");
-                    
-                    // Hapus baris tabel
+                if (result.body.ok) {
+                    openSuccessModal(result.body.msg || "Berhasil!");
+                    // Hapus baris dari tabel
                     checkedBoxes.forEach(cb => cb.closest('tr').remove());
                     updateFab();
                     const selectAll = document.getElementById('selectAllCheckbox');
-                    if(selectAll) selectAll.checked = false;
+                    if (selectAll) selectAll.checked = false;
                 } else {
-                    // GAGAL 
-                    openErrorModal(data.msg);
+                    openErrorModal(result.body.msg || "Gagal moderasi.");
                 }
             })
             .catch(err => {
                 console.error(err);
                 closeModerationModal();
-                openErrorModal("Terjadi kesalahan koneksi ke server.");
+                openErrorModal("Koneksi server bermasalah.");
             })
             .finally(() => {
-                // Reset tombol
                 this.innerHTML = originalText;
                 this.disabled = false;
             });
         });
     }
 
-    // --- INISIALISASI SETELAH HTMX SWAP ---
-    // Karena tabel dimuat via HTMX, memastikan fungsi updateFab 
-    // dijalankan ulang jika ada checkbox yang checked by default (misal dari server)
-    document.body.addEventListener('htmx:afterSwap', function(evt) {
-        // Cek jika target swap adalah resultsContainer
-        if(evt.detail.target.id === "resultsContainer") {
+    // HTMX Hook
+    document.body.addEventListener('htmx:afterSwap', function (evt) {
+        if (evt.detail.target.id === "resultsContainer") {
             updateFab();
         }
     });
+});
+
+// ===== FUNGSI GLOBAL =====
+
+function updateFab() {
+    const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+    const fabContainer = document.getElementById('fabContainer');
+    const fabCount = document.getElementById('fabCount');
+    const modCount = document.getElementById('modCountText');
+
+    if (fabCount) fabCount.innerText = checkedBoxes.length;
+    if (modCount) modCount.innerText = checkedBoxes.length;
+
+    if (fabContainer) {
+        checkedBoxes.length > 0 ? fabContainer.classList.remove('hidden') : fabContainer.classList.add('hidden');
+    }
+}
+
+function toggleAll(source) {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(cb => {
+        if (cb.closest('tr').style.display !== 'none') {
+            cb.checked = source.checked;
+        }
+    });
+    updateFab();
+}
+
+function filterTable(value) {
+    const rows = document.querySelectorAll('.comment-row');
+    rows.forEach(row => {
+        if (value === 'all') row.style.display = '';
+        else row.style.display = (row.dataset.type === value) ? '' : 'none';
+    });
+    updateFab();
+}
+
+// ===== MODAL HELPERS =====
+function openModerationModal() {
+    // Render variable Django sebagai teks JS boolean murni
+    const isOauthOk = {{ oauth_ok|yesno:"true,false" }};
+    
+    if (!isOauthOk) {
+        document.getElementById('loginRequiredModal').classList.remove('hidden');
+    } else {
+        document.getElementById('moderationModal').classList.remove('hidden');
+    }
+}
+function closeModerationModal() { document.getElementById('moderationModal').classList.add('hidden'); }
+function closeLoginRequiredModal() { document.getElementById('loginRequiredModal').classList.add('hidden'); }
+function closeErrorModal() { document.getElementById('errorModal').classList.add('hidden'); }
+function closeSuccessModal() { document.getElementById('successModal').classList.add('hidden'); }
+
+function openSuccessModal(msg) {
+    document.getElementById('successModalMsg').innerText = msg;
+    document.getElementById('successModal').classList.remove('hidden');
+}
+function openErrorModal(msg) {
+    document.getElementById('errorModalMsg').innerText = msg;
+    document.getElementById('errorModal').classList.remove('hidden');
+}
 </script>
+<!-- ===== END JAVASCRIPT LOGIC ===== -->
+
+<!-- ===== CSS CUSTOM ===== -->
+<style>
+    .hidden { display: none !important; }
+    
+    /* Style agar Select Option terlihat konsisten dengan Input */
+    select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background-color: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        color: #1f2937;
+        appearance: none; /* Hilangkan panah default browser */
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.75rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+    }
+    
+    /* Style saat disabled agar user tau itu mati */
+    select:disabled {
+        background-color: #f3f4f6;
+        color: #9ca3af;
+        cursor: not-allowed;
+    }
+</style>
+<!-- ===== END CSS CUSTOM ===== -->
 {% endblock %}
