@@ -6,14 +6,14 @@ import joblib
 USE_PREPROCESS = True
 BEST_THR = 0.50
 
-_MODEL_PATH = Path(__file__).resolve().parent / "model" / "judol_pipeline_v1_new.joblib"
+_MODEL_PATH = Path(__file__).resolve().parent / "model" / "judol_pipeline_v6_saga.joblib"
 
 _lock = Lock()
 _PIPE = None
 
 if USE_PREPROCESS:
     # from .preprosess import preprosesing
-    from .preprocessing import preprocess as preprosesing
+    from .preprocess import preprocess
 
 def _lazy_load():
     global _PIPE
@@ -30,7 +30,7 @@ def predict_comment(raw_text: str) -> dict:
     _lazy_load()
     text = (raw_text or "")
     try:
-        clean = preprosesing(text) if USE_PREPROCESS else text
+        clean = preprocess(text) if USE_PREPROCESS else text
     except Exception:
         clean = text
 
