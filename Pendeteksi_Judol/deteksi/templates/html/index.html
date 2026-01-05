@@ -16,9 +16,9 @@
 
   <!-- Input URL -->
   <div class="input-group">
-    <label for="urlInput">YouTube URL / Channel / Username</label>
+    <label for="urlInput">Video URL atau Channel</label>
     <input type="text" name="url" id="urlInput" 
-      placeholder="Contoh: https://youtube.com/watch?v=... atau @WindahBasudara" 
+      placeholder="https://youtube.com/watch?v=/channel atau @WindahBasudara" 
       spellcheck="false" required value="{{ url|default:'' }}"
       oninput="this.classList.remove('input-error'); document.getElementById('urlInlineError').innerHTML = '';">
     <div id="urlInlineError"></div>
@@ -28,12 +28,12 @@
   <div class="input-group" id="videoInputContainer">
     <label for="maxResults">Total Komentar Diambil</label>
     <select name="limit" id="maxResults">
-      <option value="20" {% if selected_limit == "20" %}selected{% endif %}>20 Komentar</option>
-      <option value="50" {% if selected_limit == "50" %}selected{% endif %}>50 Komentar (Default)</option>
-      <option value="100" {% if selected_limit == "100" %}selected{% endif %}>100 Komentar</option>
-      <option value="200" {% if selected_limit == "200" %}selected{% endif %}>200 Komentar</option>
-      <option value="500" {% if selected_limit == "500" %}selected{% endif %}>500 Komentar</option>
-      <option value="1000" {% if selected_limit == "1000" %}selected{% endif %}>1000 Komentar</option>
+      <option value="20">20 Komentar</option>
+      <option value="50" selected>50 Komentar</option>
+      <option value="100">100 Komentar</option>
+      <option value="200">200 Komentar</option>
+      <option value="500">500 Komentar</option>
+      <option value="1000">1000 Komentar</option>
     </select>
   </div>
 
@@ -41,9 +41,9 @@
   <div class="input-group hidden" id="channelInputContainer">
     <label for="videoCount">Analisis Video Terakhir</label>
     <select name="video_count" id="videoCount" disabled>
-      <option value="3">3 Video Terbaru</option>
-      <option value="5" selected>5 Video Terbaru (Default)</option>
-      <option value="10">10 Video Terbaru</option>
+      <option value="3">3 Video</option>
+      <option value="5" selected>5 Video</option>
+      <option value="10">10 Video</option>
     </select>
   </div>
 
@@ -51,7 +51,7 @@
     <label for="commentsPerVideo">Sampel Komentar per Video</label>
     <select name="comments_per_video" id="commentsPerVideo" disabled>
       <option value="20">20 Komentar</option>
-      <option value="50" selected>50 Komentar (Default)</option>
+      <option value="50" selected>50 Komentar</option>
       <option value="100">100 Komentar</option>
     </select>
     <small style="color: #6b7280; font-size: 0.8rem; margin-top: 4px; display: block;">
@@ -68,7 +68,7 @@
 <!-- ===== LOADING STATE ===== -->
 <div class="loading-state htmx-indicator" id="loadingState">
   <div class="spinner"></div>
-  <p>Sedang mengambil komentar, melakukan preprocessing, dan prediksi ML...</p>
+  <p>Sedang mengambil komentar, melakukan preprocessing, dan prediksi...</p>
 </div>
 <!-- ===== END LOADING STATE ===== -->
 
