@@ -49,8 +49,12 @@
         <table class="results-table" id="commentsTable">
             <thead>
                 <tr>
+                    {% if oauth_ok %}
                     <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleAll(this)">
                     </th>
+                    {% else %}
+                    <th style="width: 40px;"></th>
+                    {% endif %}
                     <th>Username</th>
                     <th>Komentar</th>
                     <th>Prediksi</th>
@@ -62,8 +66,10 @@
                 {% for r in rows %}
                 <tr class="comment-row" data-type="{{ r.label|yesno:'gambling,clean' }}">
                     <td>
+                        {% if oauth_ok %}
                         <input type="checkbox" name="comment_id" value="{{ r.comment_id }}" class="row-checkbox"
                             onchange="updateFab()" {% if r.label %}checked{% endif %}>
+                        {% endif %}
                     </td>
                     <td style="font-weight:500;">{{ r.author }}</td>
                     <td style="max-width:300px;" title="{{ r.text }}">{{ r.text|truncatechars:50 }}</td>
@@ -86,7 +92,34 @@
 </div>
 
 <script>
+    // Panggil updateFab saat partial dimuat (jika tersedia)
     if (typeof updateFab === 'function') {
         updateFab();
+    }
+    
+    // Panggil autoCheckGamblingComments jika tersedia (user logged in)
+    // Cek juga apakah ada checkbox (user logged in)
+    if (typeof autoCheckGamblingComments === 'function' && document.querySelectorAll('.row-checkbox').length > 0) {
+        setTimeout(autoCheckGamblingComments, 100);
+    }
+    
+    // Fallback: jika fungsi autoCheckGamblingComments tidak tersedia di global scope
+    if (typeof autoCheckGamblingComments === 'undefined') {
+        setTimeout(function() {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            if (checkboxes.length > 0) {
+                let hasChecked = false;
+                checkboxes.forEach(cb => {
+                    const row = cb.closest('tr');
+                    if (row && row.dataset.type === 'gambling' && !cb.checked) {
+                        cb.checked = true;
+                        hasChecked = true;
+                    }
+                });
+                if (hasChecked && typeof updateFab === 'function') {
+                    updateFab();
+                }
+            }
+        }, 150);
     }
 </script>

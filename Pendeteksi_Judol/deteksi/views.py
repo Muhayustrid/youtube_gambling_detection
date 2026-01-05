@@ -219,6 +219,8 @@ def index(request):
                 "selected_limit": selected_limit,
             })
             if request.headers.get('HX-Request'):
+                # Ensure oauth_ok is in context for HTMX error response
+                ctx["oauth_ok"] = oauth_ok
                 htmx_response = f"""
                 <div id="urlInlineError" hx-swap-oob="true" class="error-message-inline">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -237,6 +239,9 @@ def index(request):
                 """
                 return HttpResponse(htmx_response)
             return render(request, "html/index.html", ctx)
+        
+        # Ensure oauth_ok is always in context for results_partial
+        ctx["oauth_ok"] = oauth_ok
         
         # Generate Insight (Service Call)
         try: 

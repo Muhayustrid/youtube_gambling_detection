@@ -81,11 +81,13 @@
 <!-- ===== END HASIL ANALISIS ===== -->
 
 <!-- ===== FAB MODERASI ===== -->
+{% if oauth_ok %}
 <div class="fab-container hidden" id="fabContainer">
   <button class="fab-btn" id="fabBtn" onclick="openModerationModal()">
     Moderasi Komentar Terpilih (<span id="fabCount">0</span>)
   </button>
 </div>
+{% endif %}
 <!-- ===== END FAB MODERASI ===== -->
 
 <!-- ===== MODAL MODERASI ===== -->
@@ -237,14 +239,13 @@ document.addEventListener("DOMContentLoaded", function() {
     if (urlInput) {
         urlInput.addEventListener('input', toggleInputFields);
         urlInput.addEventListener('change', toggleInputFields);
-        // Jalankan sekali saat load untuk handle nilai awal (misal setelah error)
         toggleInputFields();
     }
 
     // --- Re-inisialisasi FAB saat load ---
     updateFab();
 
-    // Event Listener Moderasi (Dipindah ke dalam DOMContentLoaded agar aman)
+    // Event Listener Moderasi 
     const confirmBtn = document.getElementById('confirmModerationBtn');
     if (confirmBtn) {
         confirmBtn.addEventListener('click', function () {
@@ -264,7 +265,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             const formData = new FormData();
             formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-            formData.append('action', 'reject'); // atau 'delete' sesuai backend
+            formData.append('action', 'reject'); 
             formData.append('block_user', blockUserVal);
             ids.forEach(id => formData.append('comment_id', id));
 
@@ -298,10 +299,28 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    // HTMX Hook
+    // HTMX Hooks
     document.body.addEventListener('htmx:afterSwap', function (evt) {
         if (evt.detail.target.id === "resultsContainer") {
             updateFab();
+            // Auto-check komentar judol setelah partial dimuat
+            setTimeout(autoCheckGamblingComments, 100);
+        }
+    });
+
+    // Handle HTMX request completion (untuk kasus pertama kali load)
+    document.body.addEventListener('htmx:afterRequest', function (evt) {
+        if (evt.detail.target.id === "resultsContainer" && evt.detail.successful) {
+            updateFab();
+            setTimeout(autoCheckGamblingComments, 100);
+        }
+    });
+
+    // Handle HTMX settle (untuk kasus pertama kali load dengan hasil)
+    document.body.addEventListener('htmx:afterSettle', function (evt) {
+        if (evt.detail.target.id === "resultsContainer") {
+            updateFab();
+            setTimeout(autoCheckGamblingComments, 100);
         }
     });
 });
@@ -317,13 +336,34 @@ function updateFab() {
     if (fabCount) fabCount.innerText = checkedBoxes.length;
     if (modCount) modCount.innerText = checkedBoxes.length;
 
+    // Only show/hide FAB if it exists (user is logged in)
     if (fabContainer) {
         checkedBoxes.length > 0 ? fabContainer.classList.remove('hidden') : fabContainer.classList.add('hidden');
     }
 }
 
+// Fungsi untuk auto-check komentar judol (didefinisikan di sini agar tersedia global)
+function autoCheckGamblingComments() {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    if (checkboxes.length > 0) {
+        let hasChecked = false;
+        checkboxes.forEach(cb => {
+            const row = cb.closest('tr');
+            if (row && row.dataset.type === 'gambling' && !cb.checked) {
+                cb.checked = true;
+                hasChecked = true;
+            }
+        });
+        if (hasChecked) {
+            updateFab();
+        }
+    }
+}
+
 function toggleAll(source) {
     const checkboxes = document.querySelectorAll('.row-checkbox');
+    if (checkboxes.length === 0) return; // No checkboxes = user not logged in
+    
     checkboxes.forEach(cb => {
         if (cb.closest('tr').style.display !== 'none') {
             cb.checked = source.checked;
@@ -334,6 +374,8 @@ function toggleAll(source) {
 
 function filterTable(value) {
     const rows = document.querySelectorAll('.comment-row');
+    if (rows.length === 0) return; // No rows = no results or user not logged in
+    
     rows.forEach(row => {
         if (value === 'all') row.style.display = '';
         else row.style.display = (row.dataset.type === value) ? '' : 'none';
@@ -343,12 +385,14 @@ function filterTable(value) {
 
 // ===== MODAL HELPERS =====
 function openModerationModal() {
-    // Render variable Django sebagai teks JS boolean murni
-    const isOauthOk = {{ oauth_ok|yesno:"true,false" }};
+    // Cek apakah user sudah login dengan memeriksa elemen FAB
+    const fabContainer = document.getElementById('fabContainer');
     
-    if (!isOauthOk) {
+    if (!fabContainer) {
+        // FAB tidak ada = user belum login
         document.getElementById('loginRequiredModal').classList.remove('hidden');
     } else {
+        // FAB ada = user sudah login
         document.getElementById('moderationModal').classList.remove('hidden');
     }
 }

@@ -660,6 +660,7 @@ body {
     bottom: 2rem;
     right: 2rem;
     z-index: 500;
+    animation: slideUp 0.3s ease-out;
 }
 
 .fab-btn {
@@ -681,6 +682,57 @@ body {
 .fab-btn:hover {
     transform: translateY(-2px);
     background-color: var(--accent-hover);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Table Checkbox Styling - Only visible when logged in */
+.results-table td:first-child,
+.results-table th:first-child {
+    text-align: center;
+}
+
+/* Style untuk checkbox yang terlihat profesional */
+.row-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--accent-color);
+}
+
+#selectAllCheckbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--accent-color);
+}
+
+/* Table row hover effect */
+.results-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+/* Responsive FAB */
+@media (max-width: 768px) {
+    .fab-container {
+        bottom: 1rem;
+        right: 1rem;
+        left: 1rem;
+    }
+    
+    .fab-btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* HTMX Indicator Logic */
