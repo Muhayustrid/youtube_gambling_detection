@@ -28,7 +28,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.getenv("DJANGO_DEBUG", "0")))
 
-ALLOWED_HOSTS = [host.strip() for host in os.getenv("AlLOWED_HOSTS").split(",")]
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'www.antislot.my.id', 'antislot.my.id', 'antislot.up.railway.app']
 
 
 # Application definition
@@ -170,6 +170,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_TRUSTED_ORIGINS = ['https://*.railway.app', 'https://www.antislot.my.id', 'https://*.antislot.my.id']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
