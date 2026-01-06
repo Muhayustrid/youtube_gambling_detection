@@ -162,7 +162,7 @@ def extract_channel_info(input_str: str):
     u = urlparse(input_str)
     
     # Cek URL Video biasa
-    if "watch" in u.path:
+    if "watch" in u.path or "/shorts/" in u.path:
         return "video", extract_youtube_video_id(input_str)
     if "youtu.be" in u.netloc:
         return "video", extract_youtube_video_id(input_str)
