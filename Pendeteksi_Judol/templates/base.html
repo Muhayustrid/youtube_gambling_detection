@@ -115,7 +115,7 @@
             const profileDropdown = document.getElementById('profileDropdown');
             const suggestLoginMenu = document.getElementById('suggestLoginMenu');
             const closeSuggestBtn = document.getElementById('closeSuggestBtn');
-            const isLoggedIn = {{ oauth_ok|yesno:"true,false" }};
+            const isLoggedIn = {{ oauth_ok|yesno:"true,false"}};
 
         // Toggle Dropdown if logged in
         if (profileContainer && isLoggedIn) {
@@ -142,6 +142,7 @@
         }
         });
     </script>
+    <script src="{% static 'js/main.js' %}"></script>
     {% block script %}{% endblock %}
 </body>
 

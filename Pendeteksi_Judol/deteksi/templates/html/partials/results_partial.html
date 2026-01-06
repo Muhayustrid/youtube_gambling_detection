@@ -91,36 +91,3 @@
         </table>
     </form>
 </div>
-
-<script>
-    // Panggil updateFab saat partial dimuat (jika tersedia)
-    if (typeof updateFab === 'function') {
-        updateFab();
-    }
-
-    // Panggil autoCheckGamblingComments jika tersedia (user logged in)
-    // Cek juga apakah ada checkbox (user logged in)
-    if (typeof autoCheckGamblingComments === 'function' && document.querySelectorAll('.row-checkbox').length > 0) {
-        setTimeout(autoCheckGamblingComments, 100);
-    }
-
-    // Fallback: jika fungsi autoCheckGamblingComments tidak tersedia di global scope
-    if (typeof autoCheckGamblingComments === 'undefined') {
-        setTimeout(function () {
-            const checkboxes = document.querySelectorAll('.row-checkbox');
-            if (checkboxes.length > 0) {
-                let hasChecked = false;
-                checkboxes.forEach(cb => {
-                    const row = cb.closest('tr');
-                    if (row && row.dataset.type === 'gambling' && !cb.checked) {
-                        cb.checked = true;
-                        hasChecked = true;
-                    }
-                });
-                if (hasChecked && typeof updateFab === 'function') {
-                    updateFab();
-                }
-            }
-        }, 150);
-    }
-</script>
