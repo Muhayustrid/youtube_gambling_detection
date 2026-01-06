@@ -34,6 +34,10 @@ def extract_youtube_video_id(url: str) -> str | None:
             # Cek format URL /shorts/
             if "/shorts/" in u.path:
                 return u.path.split("/shorts/")[1].split("?")[0]
+
+            # Cek format URL /live/
+            if "/live/" in u.path:
+                return u.path.split("/live/")[1].split("?")[0]
             
             # Cek format URL /watch
             if u.path == "/watch":
@@ -162,7 +166,7 @@ def extract_channel_info(input_str: str):
     u = urlparse(input_str)
     
     # Cek URL Video biasa
-    if "watch" in u.path or "/shorts/" in u.path:
+    if "watch" in u.path or "/shorts/" in u.path or "/live/" in u.path:
         return "video", extract_youtube_video_id(input_str)
     if "youtu.be" in u.netloc:
         return "video", extract_youtube_video_id(input_str)

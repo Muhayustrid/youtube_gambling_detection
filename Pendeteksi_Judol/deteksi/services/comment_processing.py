@@ -1,6 +1,7 @@
 from ..services.youtube import collect_comments, extract_youtube_video_id
 from ..ml.predict import predict_comment
 from ..ml.utils_text import top_keywords_from_texts
+from datetime import datetime
 
 # ===== FUNGSI PEMROSESAN KOMENTAR =====
 def process_raw_comments(rows):
@@ -12,11 +13,22 @@ def process_raw_comments(rows):
     results = []
     
     # Batch predict (optimalisasi: jika model support batch, lakukan di sini. 
-    # Saat ini loop satu per satu sesuai existing logic)
+    # loop satu per satu sesuai existing logic
     for r in rows:
         pred = predict_comment(r["text"])
+        
+        # Parse output date
+        pub_at = r.get("published_at")
+        if isinstance(pub_at, str):
+            try:
+                # Mengubah ISO string (UTC) menjadi datetime aware
+                pub_at = datetime.fromisoformat(pub_at.replace("Z", "+00:00"))
+            except ValueError:
+                pass
+
         results.append({
             **r,
+            "published_at": pub_at,
             "text_clean": pred["clean"],
             "label": pred["label"],
             "proba": pred["proba"],

@@ -5,20 +5,21 @@
 <!-- ===== HERO SECTION ===== -->
 <div class="hero-section">
   <h1>Analisis Komentar</h1>
-  <p class="subtitle">Deteksi promosi judi online pada komentar YouTube secara otomatis menggunakan Logistic Regression</p>
+  <p class="subtitle">Deteksi promosi judi online pada komentar YouTube secara otomatis menggunakan Logistic Regression
+  </p>
 </div>
 <!-- ===== END HERO SECTION ===== -->
 
 <!-- ===== FORM ANALISIS ===== -->
-<form class="analysis-container" hx-post="{% url 'index' %}" hx-target="#resultsContainer" hx-indicator="#loadingState" hx-swap="innerHTML">
+<form class="analysis-container" hx-post="{% url 'index' %}" hx-target="#resultsContainer" hx-indicator="#loadingState"
+  hx-swap="innerHTML">
 
   {% csrf_token %}
 
   <!-- Input URL -->
   <div class="input-group">
     <label for="urlInput">Video URL atau Channel</label>
-    <input type="text" name="url" id="urlInput" 
-      placeholder="https://youtube.com/watch?v=/channel atau @WindahBasudara" 
+    <input type="text" name="url" id="urlInput" placeholder="https://youtube.com/watch?v=/channel atau @WindahBasudara"
       spellcheck="false" required value="{{ url|default:'' }}"
       oninput="this.classList.remove('input-error'); document.getElementById('urlInlineError').innerHTML = '';">
     <div id="urlInlineError"></div>
@@ -75,7 +76,7 @@
 <!-- ===== HASIL ANALISIS ===== -->
 <div class="results-section" id="resultsContainer">
   {% if rows %}
-    {% include 'html/partials/results_partial.html' %}
+  {% include 'html/partials/results_partial.html' %}
   {% endif %}
 </div>
 <!-- ===== END HASIL ANALISIS ===== -->
@@ -118,10 +119,11 @@
       <h2 style="color: #ef4444;">Gagal Moderasi</h2>
     </div>
     <div class="modal-body">
-        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
-            <img src="{% static 'assets/image/forbidden.svg' %}" alt="Forbidden" width="64" height="64" style="object-fit: contain;">
-            <p id="errorModalMsg" style="font-size: 1.1rem; color: #333;">Terjadi kesalahan.</p>
-        </div>
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+        <img src="{% static 'assets/image/forbidden.svg' %}" alt="Forbidden" width="64" height="64"
+          style="object-fit: contain;">
+        <p id="errorModalMsg" style="font-size: 1.1rem; color: #333;">Terjadi kesalahan.</p>
+      </div>
     </div>
     <div class="modal-footer row" style="justify-content: center;">
       <button class="btn-cancel" onclick="closeErrorModal()" style="width: 100%;">Tutup</button>
@@ -137,16 +139,18 @@
       <h2 style="color: #16a34a;">Berhasil!</h2>
     </div>
     <div class="modal-body">
-        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            <p id="successModalMsg" style="font-size: 1.1rem; color: #333;">Aksi berhasil dilakukan.</p>
-        </div>
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <p id="successModalMsg" style="font-size: 1.1rem; color: #333;">Aksi berhasil dilakukan.</p>
+      </div>
     </div>
     <div class="modal-footer row" style="justify-content: center;">
-      <button class="btn-confirm" onclick="closeSuccessModal()" style="width: 100%; background-color: #16a34a; border-color: #16a34a;">OK</button>
+      <button class="btn-confirm" onclick="closeSuccessModal()"
+        style="width: 100%; background-color: #16a34a; border-color: #16a34a;">OK</button>
     </div>
   </div>
 </div>
@@ -154,21 +158,23 @@
 
 <!-- ===== MODAL LOGIN REQUIRED ===== -->
 <div class="modal-overlay hidden" id="loginRequiredModal">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h2>Login Diperlukan</h2>
-      </div>
-      <div class="modal-body">
-        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
-            <img src="{% static 'assets/image/warning.svg' %}" alt="Warning" width="64" height="64" style="object-fit: contain;">
-            <p style="font-size: 1.1rem; color: #333; font-weight: 500;">Harap login YouTube terlebih dahulu</p>
-            <p style="font-size: 0.9rem; color: #6b7280;">Untuk melakukan moderasi komentar, Anda perlu login dengan akun YouTube terlebih dahulu.</p>
-        </div>
-      </div>
-      <div class="modal-footer row" style="justify-content: center;">
-        <button class="btn-cancel" onclick="closeLoginRequiredModal()" style="width: 100%;">Tutup</button>
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2>Login Diperlukan</h2>
+    </div>
+    <div class="modal-body">
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+        <img src="{% static 'assets/image/warning.svg' %}" alt="Warning" width="64" height="64"
+          style="object-fit: contain;">
+        <p style="font-size: 1.1rem; color: #333; font-weight: 500;">Harap login YouTube terlebih dahulu</p>
+        <p style="font-size: 0.9rem; color: #6b7280;">Untuk melakukan moderasi komentar, Anda perlu login dengan akun
+          YouTube terlebih dahulu.</p>
       </div>
     </div>
+    <div class="modal-footer row" style="justify-content: center;">
+      <button class="btn-cancel" onclick="closeLoginRequiredModal()" style="width: 100%;">Tutup</button>
+    </div>
+  </div>
 </div>
 <!-- ===== END MODAL LOGIN REQUIRED ===== -->
 
@@ -177,8 +183,8 @@
 {% block script %}
 <!-- ===== JAVASCRIPT LOGIC ===== -->
 <script>
-// ===== INISIALISASI SETELAH HALAMAN DIMUAT =====
-document.addEventListener("DOMContentLoaded", function() {
+  // ===== INISIALISASI SETELAH HALAMAN DIMUAT =====
+  document.addEventListener("DOMContentLoaded", function () {
     console.log("Script Loaded & Ready");
 
     // --- Definisi Elemen Form ---
@@ -186,7 +192,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const videoInputContainer = document.getElementById('videoInputContainer');
     const channelInputContainer = document.getElementById('channelInputContainer');
     const commentsPerVideoContainer = document.getElementById('commentsPerVideoContainer');
-    
+
     // Elemen Input Select
     const maxResultsSelect = document.getElementById('maxResults');
     const videoCountSelect = document.getElementById('videoCount');
@@ -194,52 +200,52 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // --- Fungsi Deteksi Tipe URL ---
     function detectUrlType(url) {
-        if (!url) return 'unknown';
-        if (url.includes('@') || url.includes('/channel/') || url.includes('/c/') || url.includes('/user/')) {
-            return 'channel';
-        }
-        else if (url.includes('watch?v=') || url.includes('youtu.be') || url.includes('/shorts/')) {
-            return 'video';
-        }
-        return 'unknown';
+      if (!url) return 'unknown';
+      if (url.includes('@') || url.includes('/channel/') || url.includes('/c/') || url.includes('/user/')) {
+        return 'channel';
+      }
+      else if (url.includes('watch?v=') || url.includes('youtu.be') || url.includes('/shorts/') || url.includes('/live/')) {
+        return 'video';
+      }
+      return 'unknown';
     }
 
     // --- Fungsi Toggle Tampilan Form ---
     function toggleInputFields() {
-        const url = urlInput.value.trim();
-        const urlType = detectUrlType(url);
-        
-        console.log("Input berubah, Tipe:", urlType); 
+      const url = urlInput.value.trim();
+      const urlType = detectUrlType(url);
 
-        if (urlType === 'channel') {
-            // MODE CHANNEL: Tampilkan input khusus channel
-            videoInputContainer.classList.add('hidden');
-            channelInputContainer.classList.remove('hidden');
-            commentsPerVideoContainer.classList.remove('hidden');
+      console.log("Input berubah, Tipe:", urlType);
 
-            // Aktifkan select channel, Matikan select video
-            if(maxResultsSelect) maxResultsSelect.disabled = true;
-            if(videoCountSelect) videoCountSelect.disabled = false;
-            if(commentsPerVideoSelect) commentsPerVideoSelect.disabled = false;
+      if (urlType === 'channel') {
+        // MODE CHANNEL: Tampilkan input khusus channel
+        videoInputContainer.classList.add('hidden');
+        channelInputContainer.classList.remove('hidden');
+        commentsPerVideoContainer.classList.remove('hidden');
 
-        } else {
-            // MODE VIDEO (Default): Tampilkan input video biasa
-            videoInputContainer.classList.remove('hidden');
-            channelInputContainer.classList.add('hidden');
-            commentsPerVideoContainer.classList.add('hidden');
+        // Aktifkan select channel, Matikan select video
+        if (maxResultsSelect) maxResultsSelect.disabled = true;
+        if (videoCountSelect) videoCountSelect.disabled = false;
+        if (commentsPerVideoSelect) commentsPerVideoSelect.disabled = false;
 
-            // Aktifkan select video, Matikan select channel
-            if(maxResultsSelect) maxResultsSelect.disabled = false;
-            if(videoCountSelect) videoCountSelect.disabled = true;
-            if(commentsPerVideoSelect) commentsPerVideoSelect.disabled = true;
-        }
+      } else {
+        // MODE VIDEO (Default): Tampilkan input video biasa
+        videoInputContainer.classList.remove('hidden');
+        channelInputContainer.classList.add('hidden');
+        commentsPerVideoContainer.classList.add('hidden');
+
+        // Aktifkan select video, Matikan select channel
+        if (maxResultsSelect) maxResultsSelect.disabled = false;
+        if (videoCountSelect) videoCountSelect.disabled = true;
+        if (commentsPerVideoSelect) commentsPerVideoSelect.disabled = true;
+      }
     }
 
     // --- Pasang Event Listener ---
     if (urlInput) {
-        urlInput.addEventListener('input', toggleInputFields);
-        urlInput.addEventListener('change', toggleInputFields);
-        toggleInputFields();
+      urlInput.addEventListener('input', toggleInputFields);
+      urlInput.addEventListener('change', toggleInputFields);
+      toggleInputFields();
     }
 
     // --- Re-inisialisasi FAB saat load ---
@@ -248,86 +254,86 @@ document.addEventListener("DOMContentLoaded", function() {
     // Event Listener Moderasi 
     const confirmBtn = document.getElementById('confirmModerationBtn');
     if (confirmBtn) {
-        confirmBtn.addEventListener('click', function () {
-            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-            const ids = Array.from(checkedBoxes).map(cb => cb.value);
+      confirmBtn.addEventListener('click', function () {
+        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+        const ids = Array.from(checkedBoxes).map(cb => cb.value);
 
-            if (ids.length === 0) return;
+        if (ids.length === 0) return;
 
-            // UI Loading
-            const originalText = this.innerHTML;
-            this.innerHTML = 'Memproses...';
-            this.disabled = true;
+        // UI Loading
+        const originalText = this.innerHTML;
+        this.innerHTML = 'Memproses...';
+        this.disabled = true;
 
-            // Data Blokir User
-            const blockUserCheckbox = document.getElementById('blockUserCheckbox');
-            const blockUserVal = blockUserCheckbox && blockUserCheckbox.checked ? '1' : '0';
+        // Data Blokir User
+        const blockUserCheckbox = document.getElementById('blockUserCheckbox');
+        const blockUserVal = blockUserCheckbox && blockUserCheckbox.checked ? '1' : '0';
 
-            const formData = new FormData();
-            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-            formData.append('action', 'reject'); 
-            formData.append('block_user', blockUserVal);
-            ids.forEach(id => formData.append('comment_id', id));
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        formData.append('action', 'reject');
+        formData.append('block_user', blockUserVal);
+        ids.forEach(id => formData.append('comment_id', id));
 
-            fetch("{% url 'moderate_comments' %}", {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json().then(data => ({ status: res.status, body: data })))
-            .then(result => {
-                closeModerationModal();
-                if (result.body.ok) {
-                    openSuccessModal(result.body.msg || "Berhasil!");
-                    // Hapus baris dari tabel
-                    checkedBoxes.forEach(cb => cb.closest('tr').remove());
-                    updateFab();
-                    const selectAll = document.getElementById('selectAllCheckbox');
-                    if (selectAll) selectAll.checked = false;
-                } else {
-                    openErrorModal(result.body.msg || "Gagal moderasi.");
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                closeModerationModal();
-                openErrorModal("Koneksi server bermasalah.");
-            })
-            .finally(() => {
-                this.innerHTML = originalText;
-                this.disabled = false;
-            });
-        });
+        fetch("{% url 'moderate_comments' %}", {
+          method: 'POST',
+          body: formData
+        })
+          .then(res => res.json().then(data => ({ status: res.status, body: data })))
+          .then(result => {
+            closeModerationModal();
+            if (result.body.ok) {
+              openSuccessModal(result.body.msg || "Berhasil!");
+              // Hapus baris dari tabel
+              checkedBoxes.forEach(cb => cb.closest('tr').remove());
+              updateFab();
+              const selectAll = document.getElementById('selectAllCheckbox');
+              if (selectAll) selectAll.checked = false;
+            } else {
+              openErrorModal(result.body.msg || "Gagal moderasi.");
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            closeModerationModal();
+            openErrorModal("Koneksi server bermasalah.");
+          })
+          .finally(() => {
+            this.innerHTML = originalText;
+            this.disabled = false;
+          });
+      });
     }
 
     // HTMX Hooks
     document.body.addEventListener('htmx:afterSwap', function (evt) {
-        if (evt.detail.target.id === "resultsContainer") {
-            updateFab();
-            // Auto-check komentar judol setelah partial dimuat
-            setTimeout(autoCheckGamblingComments, 100);
-        }
+      if (evt.detail.target.id === "resultsContainer") {
+        updateFab();
+        // Auto-check komentar judol setelah partial dimuat
+        setTimeout(autoCheckGamblingComments, 100);
+      }
     });
 
     // Handle HTMX request completion (untuk kasus pertama kali load)
     document.body.addEventListener('htmx:afterRequest', function (evt) {
-        if (evt.detail.target.id === "resultsContainer" && evt.detail.successful) {
-            updateFab();
-            setTimeout(autoCheckGamblingComments, 100);
-        }
+      if (evt.detail.target.id === "resultsContainer" && evt.detail.successful) {
+        updateFab();
+        setTimeout(autoCheckGamblingComments, 100);
+      }
     });
 
     // Handle HTMX settle (untuk kasus pertama kali load dengan hasil)
     document.body.addEventListener('htmx:afterSettle', function (evt) {
-        if (evt.detail.target.id === "resultsContainer") {
-            updateFab();
-            setTimeout(autoCheckGamblingComments, 100);
-        }
+      if (evt.detail.target.id === "resultsContainer") {
+        updateFab();
+        setTimeout(autoCheckGamblingComments, 100);
+      }
     });
-});
+  });
 
-// ===== FUNGSI GLOBAL =====
+  // ===== FUNGSI GLOBAL =====
 
-function updateFab() {
+  function updateFab() {
     const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
     const fabContainer = document.getElementById('fabContainer');
     const fabCount = document.getElementById('fabCount');
@@ -338,106 +344,108 @@ function updateFab() {
 
     // Only show/hide FAB if it exists (user is logged in)
     if (fabContainer) {
-        checkedBoxes.length > 0 ? fabContainer.classList.remove('hidden') : fabContainer.classList.add('hidden');
+      checkedBoxes.length > 0 ? fabContainer.classList.remove('hidden') : fabContainer.classList.add('hidden');
     }
-}
+  }
 
-// Fungsi untuk auto-check komentar judol 
-function autoCheckGamblingComments() {
+  // Fungsi untuk auto-check komentar judol 
+  function autoCheckGamblingComments() {
     const checkboxes = document.querySelectorAll('.row-checkbox');
     if (checkboxes.length > 0) {
-        let hasChecked = false;
-        checkboxes.forEach(cb => {
-            const row = cb.closest('tr');
-            if (row && row.dataset.type === 'gambling' && !cb.checked) {
-                cb.checked = true;
-                hasChecked = true;
-            }
-        });
-        if (hasChecked) {
-            updateFab();
+      let hasChecked = false;
+      checkboxes.forEach(cb => {
+        const row = cb.closest('tr');
+        if (row && row.dataset.type === 'gambling' && !cb.checked) {
+          cb.checked = true;
+          hasChecked = true;
         }
+      });
+      if (hasChecked) {
+        updateFab();
+      }
     }
-}
+  }
 
-function toggleAll(source) {
+  function toggleAll(source) {
     const checkboxes = document.querySelectorAll('.row-checkbox');
     if (checkboxes.length === 0) return; // No checkboxes = user not logged in
-    
+
     checkboxes.forEach(cb => {
-        if (cb.closest('tr').style.display !== 'none') {
-            cb.checked = source.checked;
-        }
+      if (cb.closest('tr').style.display !== 'none') {
+        cb.checked = source.checked;
+      }
     });
     updateFab();
-}
+  }
 
-function filterTable(value) {
+  function filterTable(value) {
     const rows = document.querySelectorAll('.comment-row');
     if (rows.length === 0) return; // No rows = no results or user not logged in
-    
+
     rows.forEach(row => {
-        if (value === 'all') row.style.display = '';
-        else row.style.display = (row.dataset.type === value) ? '' : 'none';
+      if (value === 'all') row.style.display = '';
+      else row.style.display = (row.dataset.type === value) ? '' : 'none';
     });
     updateFab();
-}
+  }
 
-// ===== MODAL HELPERS =====
-function openModerationModal() {
+  // ===== MODAL HELPERS =====
+  function openModerationModal() {
     // Cek apakah user sudah login dengan memeriksa elemen FAB
     const fabContainer = document.getElementById('fabContainer');
-    
-    if (!fabContainer) {
-        // FAB tidak ada = user belum login
-        document.getElementById('loginRequiredModal').classList.remove('hidden');
-    } else {
-        // FAB ada = user sudah login
-        document.getElementById('moderationModal').classList.remove('hidden');
-    }
-}
-function closeModerationModal() { document.getElementById('moderationModal').classList.add('hidden'); }
-function closeLoginRequiredModal() { document.getElementById('loginRequiredModal').classList.add('hidden'); }
-function closeErrorModal() { document.getElementById('errorModal').classList.add('hidden'); }
-function closeSuccessModal() { document.getElementById('successModal').classList.add('hidden'); }
 
-function openSuccessModal(msg) {
+    if (!fabContainer) {
+      // FAB tidak ada = user belum login
+      document.getElementById('loginRequiredModal').classList.remove('hidden');
+    } else {
+      // FAB ada = user sudah login
+      document.getElementById('moderationModal').classList.remove('hidden');
+    }
+  }
+  function closeModerationModal() { document.getElementById('moderationModal').classList.add('hidden'); }
+  function closeLoginRequiredModal() { document.getElementById('loginRequiredModal').classList.add('hidden'); }
+  function closeErrorModal() { document.getElementById('errorModal').classList.add('hidden'); }
+  function closeSuccessModal() { document.getElementById('successModal').classList.add('hidden'); }
+
+  function openSuccessModal(msg) {
     document.getElementById('successModalMsg').innerText = msg;
     document.getElementById('successModal').classList.remove('hidden');
-}
-function openErrorModal(msg) {
+  }
+  function openErrorModal(msg) {
     document.getElementById('errorModalMsg').innerText = msg;
     document.getElementById('errorModal').classList.remove('hidden');
-}
+  }
 </script>
 <!-- ===== END JAVASCRIPT LOGIC ===== -->
 
 <!-- ===== CSS CUSTOM ===== -->
 <style>
-    .hidden { display: none !important; }
-    
-    /* Style Select Option */
-    select {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        background-color: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-        font-size: 0.95rem;
-        color: #1f2937;
-        appearance: none; 
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-        background-position: right 0.75rem center;
-        background-repeat: no-repeat;
-        background-size: 1.5em 1.5em;
-    }
-    
-    /* Style saat disabled */
-    select:disabled {
-        background-color: #f3f4f6;
-        color: #9ca3af;
-        cursor: not-allowed;
-    }
+  .hidden {
+    display: none !important;
+  }
+
+  /* Style Select Option */
+  select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    color: #1f2937;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+  }
+
+  /* Style saat disabled */
+  select:disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
 </style>
 <!-- ===== END CSS CUSTOM ===== -->
 {% endblock %}

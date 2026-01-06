@@ -72,14 +72,15 @@
                         {% endif %}
                     </td>
                     <td style="font-weight:500;">{{ r.author }}</td>
-                    <td style="max-width:300px;" title="{{ r.text }}">{{ r.text|truncatechars:50 }}</td>
+                    <td style="max-width:300px;" title="{{ r.text }}">{{ r.text|truncatechars:100 }}</td>
                     <td>
                         <span class="badge {{ r.label|yesno:'badge-gambling,badge-clean' }}">
                             {{ r.label|yesno:'Komentar Judol,Komentar Bersih' }}
                         </span>
                     </td>
                     <td>{{ r.proba|mul:100|floatformat:2 }}%</td>
-                    <td style="color:var(--text-secondary); font-size: 0.85rem;">{{ r.published_at }}</td>
+                    <td style="color:var(--text-secondary); font-size: 0.85rem;">{{ r.published_at|date:"d M Y, H:i" }}
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -96,16 +97,16 @@
     if (typeof updateFab === 'function') {
         updateFab();
     }
-    
+
     // Panggil autoCheckGamblingComments jika tersedia (user logged in)
     // Cek juga apakah ada checkbox (user logged in)
     if (typeof autoCheckGamblingComments === 'function' && document.querySelectorAll('.row-checkbox').length > 0) {
         setTimeout(autoCheckGamblingComments, 100);
     }
-    
+
     // Fallback: jika fungsi autoCheckGamblingComments tidak tersedia di global scope
     if (typeof autoCheckGamblingComments === 'undefined') {
-        setTimeout(function() {
+        setTimeout(function () {
             const checkboxes = document.querySelectorAll('.row-checkbox');
             if (checkboxes.length > 0) {
                 let hasChecked = false;
