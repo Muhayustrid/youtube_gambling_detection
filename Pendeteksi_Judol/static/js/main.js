@@ -110,7 +110,6 @@ window.filterTable = function (value) {
 // ===== MODAL HELPERS =====
 
 window.openModerationModal = function () {
-    // Cek apakah user sudah login dengan memeriksa elemen FAB
     const fabContainer = document.getElementById('fabContainer');
 
     if (!fabContainer) {
@@ -180,8 +179,6 @@ window.initMain = function (config) {
     // Event Listener Moderasi 
     const confirmBtn = document.getElementById('confirmModerationBtn');
     if (confirmBtn) {
-        // Prevent multiple listeners if initMain is called multiple times? 
-        // Usually initMain acts as DOMContentLoaded, called once per page load.
         confirmBtn.addEventListener('click', function () {
             const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
             const ids = Array.from(checkedBoxes).map(cb => cb.value);
@@ -193,7 +190,6 @@ window.initMain = function (config) {
             this.innerHTML = 'Memproses...';
             this.disabled = true;
 
-            // Data Blokir User
             const blockUserCheckbox = document.getElementById('blockUserCheckbox');
             const blockUserVal = blockUserCheckbox && blockUserCheckbox.checked ? '1' : '0';
 
@@ -220,7 +216,6 @@ window.initMain = function (config) {
                     window.closeModerationModal();
                     if (result.body.ok) {
                         window.openSuccessModal(result.body.msg || "Berhasil!");
-                        // Hapus baris dari tabel
                         checkedBoxes.forEach(cb => cb.closest('tr').remove());
                         window.updateFab();
                         const selectAll = document.getElementById('selectAllCheckbox');
@@ -246,7 +241,6 @@ window.initMain = function (config) {
 document.body.addEventListener('htmx:afterSwap', function (evt) {
     if (evt.detail.target.id === "resultsContainer") {
         window.updateFab();
-        // Auto-check komentar judol setelah partial dimuat
         setTimeout(window.autoCheckGamblingComments, 100);
     }
 });

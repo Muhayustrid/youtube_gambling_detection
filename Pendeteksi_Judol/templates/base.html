@@ -109,7 +109,7 @@
     </footer>
 
     <script>
-        // UI Logic (Dropdowns, etc)
+        // UI Logic
         document.addEventListener('DOMContentLoaded', () => {
             const profileContainer = document.getElementById('profileContainer');
             const profileDropdown = document.getElementById('profileDropdown');
@@ -117,7 +117,7 @@
             const closeSuggestBtn = document.getElementById('closeSuggestBtn');
             const isLoggedIn = {{ oauth_ok|yesno:"true,false"}};
 
-        // Toggle Dropdown if logged in
+        // Toggle Dropdown 
         if (profileContainer && isLoggedIn) {
             profileContainer.addEventListener('click', (e) => {
                 e.stopPropagation();
