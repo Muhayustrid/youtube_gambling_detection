@@ -22,7 +22,7 @@ _RE_ALNUM_MIX = re.compile(r'(?i)(?:[a-z]+\d+|\d+[a-z]+)')
 # Simbol Khusus
 VS16 = "\uFE0F"
 COEN = "\u20E3"
-HARD_SEPARATORS = r"/|\\:;~_.,\-()\[\]{}<>=+\"'"
+HARD_SEPARATORS = r"/|\\:;~_.,\-!()\[\]{}<>=+\"'"
 VOWELS = set("aiueo")
 
 # Mapping Leet Speak (Angka ke Huruf)

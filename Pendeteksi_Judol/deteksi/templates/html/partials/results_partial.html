@@ -7,11 +7,11 @@
         <p id="statTotal">{{ total_comments }}</p>
     </div>
     <div class="stat-card">
-        <h3>Komentar Bersih</h3>
+        <h3>Komentar Non-Judi Online</h3>
         <p id="statClean" class="text-clean">{{ clean_count }}</p>
     </div>
     <div class="stat-card">
-        <h3>Komentar Judol</h3>
+        <h3>Komentar Judi Online</h3>
         <p id="statGambling" class="text-gambling">{{ judi_count }}</p>
     </div>
 </div>
@@ -38,8 +38,8 @@
         <label for="filterSelect">Filter:</label>
         <select id="filterSelect" onchange="filterTable(this.value)">
             <option value="all">Semua</option>
-            <option value="gambling">Komentar Judol</option>
-            <option value="clean">Komentar Bersih</option>
+            <option value="gambling">Komentar Judi Online</option>
+            <option value="clean">Komentar Non-Judi Online</option>
         </select>
     </div>
 </div>
@@ -75,7 +75,7 @@
                     <td style="max-width:300px;" title="{{ r.text }}">{{ r.text|truncatechars:100 }}</td>
                     <td>
                         <span class="badge {{ r.label|yesno:'badge-gambling,badge-clean' }}">
-                            {{ r.label|yesno:'Komentar Judol,Komentar Bersih' }}
+                            {{ r.label|yesno:'Komentar Judi Online,Komentar Non-Judi Online' }}
                         </span>
                     </td>
                     <td>{{ r.proba|mul:100|floatformat:2 }}%</td>

@@ -235,6 +235,49 @@ def get_videos_from_playlist(playlist_id, limit=5):
         print(f"Error fetching playlist items: {e}")
         
     return video_ids
+
+def get_my_latest_videos(yt_creds, limit=6):
+    """
+    Mengambil video terakhir dari channel user yang sedang login.
+    """
+    service = get_youtube_client_from_session(yt_creds)
+    if not service:
+        return []
+
+    try:
+        # 1. Get Channel ID (Mine)
+        channels_response = service.channels().list(
+            mine=True,
+            part="contentDetails"
+        ).execute()
+
+        if not channels_response.get("items"):
+            return []
+
+        uploads_playlist_id = channels_response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+
+        # 2. Get Playlist Items (Videos)
+        playlist_items_response = service.playlistItems().list(
+            playlistId=uploads_playlist_id,
+            part="snippet",
+            maxResults=limit
+        ).execute()
+
+        videos = []
+        for item in playlist_items_response.get("items", []):
+            snippet = item["snippet"]
+            videos.append({
+                "id": snippet["resourceId"]["videoId"],
+                "title": snippet["title"],
+                "thumbnail": snippet["thumbnails"].get("medium", snippet["thumbnails"].get("default"))["url"],
+                "published_at": snippet["publishedAt"]
+            })
+        
+        return videos
+
+    except Exception as e:
+        print(f"Error fetching my videos: {e}")
+        return []
 # ===== END FUNGSI PLAYLIST & CHANNEL INFO =====
 
 # ===== FUNGSI OAUTH & MODERASI =====

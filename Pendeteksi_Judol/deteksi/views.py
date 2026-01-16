@@ -17,8 +17,10 @@ from .services.youtube import (
     extract_channel_info,
     get_channel_uploads_playlist,
     get_videos_from_playlist,
-    collect_comments
+    collect_comments,
+    get_my_latest_videos
 )
+
 from googleapiclient.errors import HttpError
 
 # ===== FUNGSI MODERASI =====
@@ -147,6 +149,9 @@ def index(request):
         "oauth_ok": oauth_ok,
         "yt_user": yt_creds.get("user") if yt_creds else None,
     }
+
+    if oauth_ok:
+        ctx["my_videos"] = get_my_latest_videos(yt_creds, limit=6)
 
     selected_limit = ""
     
@@ -281,4 +286,17 @@ def home(request):
         context["label"] = "PROMOSI JUDOL" if result["label"] == 1 else "BUKAN"
         context["proba"] = result["proba"]
     return render(request, "html/tes.html", context)
+    return render(request, "html/tes.html", context)
 # ===== END FUNGSI TESTING =====
+
+def my_videos_partial(request):
+    if not request.session.get("yt_creds"):
+         return HttpResponseForbidden("Not Authenticated")
+         
+    try:
+        limit = int(request.GET.get('limit', 6))
+    except (ValueError, TypeError):
+        limit = 6
+
+    videos = get_my_latest_videos(request.session.get("yt_creds"), limit=limit)
+    return render(request, "html/partials/video_grid.html", {"my_videos": videos})

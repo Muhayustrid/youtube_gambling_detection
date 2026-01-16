@@ -10,6 +10,30 @@ window.detectUrlType = function (url) {
         return 'video';
     }
     return 'unknown';
+    return 'unknown';
+};
+
+window.analyzeVideo = function (url) {
+    const urlInput = document.getElementById('urlInput');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+
+    if (urlInput && analyzeBtn) {
+        urlInput.value = url;
+        // Trigger input event to handle UI toggles
+        urlInput.dispatchEvent(new Event('input'));
+
+        // Validation visual feedback
+        urlInput.classList.add('highlight-input');
+        setTimeout(() => urlInput.classList.remove('highlight-input'), 500);
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Trigger analysis
+        setTimeout(() => {
+            analyzeBtn.click();
+        }, 300);
+    }
 };
 
 window.toggleInputFields = function () {

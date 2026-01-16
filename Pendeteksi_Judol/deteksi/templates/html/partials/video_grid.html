@@ -1,0 +1,16 @@
+{% for vid in my_videos %}
+<div class="video-card">
+    <div class="video-thumbnail">
+        <img src="{{ vid.thumbnail }}" alt="{{ vid.title }}">
+    </div>
+    <div class="video-info">
+        <div class="video-title" title="{{ vid.title }}">{{ vid.title }}</div>
+        <button type="button" class="btn-card-analyze"
+            onclick="analyzeVideo('https://www.youtube.com/watch?v={{ vid.id }}')">
+            Deteksi
+        </button>
+    </div>
+</div>
+{% empty %}
+<p style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">Tidak ada video ditemukan.</p>
+{% endfor %}
