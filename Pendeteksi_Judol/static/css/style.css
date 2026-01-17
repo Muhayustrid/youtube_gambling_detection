@@ -411,8 +411,28 @@ body {
 .insight-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 0.25rem;
+    margin: -0.25rem;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+.insight-header:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.insight-header:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+.insight-title {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
-    margin-bottom: 0.75rem;
 }
 
 .sparkle-icon {
@@ -423,6 +443,49 @@ body {
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-primary);
+    margin: 0;
+}
+
+.insight-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background-color: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.insight-toggle-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--text-primary);
+}
+
+.insight-toggle-btn .chevron-icon {
+    transition: transform 0.3s ease;
+}
+
+.insight-toggle-btn.rotated .chevron-icon {
+    transform: rotate(-180deg);
+}
+
+/* Insight Content with Collapse Animation */
+.insight-content {
+    max-height: 2000px;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s ease, margin-top 0.3s ease;
+    opacity: 1;
+    margin-top: 0.75rem;
+}
+
+.insight-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
 }
 
 .ai-insight-box p {
