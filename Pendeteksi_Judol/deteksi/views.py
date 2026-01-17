@@ -18,7 +18,9 @@ from .services.youtube import (
     get_channel_uploads_playlist,
     get_videos_from_playlist,
     collect_comments,
-    get_my_latest_videos
+    get_my_latest_videos,
+    get_channel_info,
+    get_video_info
 )
 
 from googleapiclient.errors import HttpError
@@ -180,6 +182,7 @@ def index(request):
         results = []
         stats = {}
         error_msg = None
+        source_info = None  # Info about channel or video
         
         if id_type == "video":
             if not identifier:
@@ -187,8 +190,17 @@ def index(request):
             else:
                 video_url = f"https://www.youtube.com/watch?v={identifier}"
                 results, stats = process_youtube_comments(video_url, limit=limit)
+                # Fetch video info for display
+                source_info = get_video_info(identifier)
+                if source_info:
+                    source_info["type"] = "video"
             
         elif id_type in ("handle", "channel_id"):
+            # Fetch Channel Info for display
+            source_info = get_channel_info(identifier, id_type)
+            if source_info:
+                source_info["type"] = "channel"
+            
             # Fetch Channel Uploads
             playlist_id = get_channel_uploads_playlist(identifier, id_type)
             if not playlist_id:
@@ -268,6 +280,7 @@ def index(request):
             "total_comments": stats["total"],
             "judi_count": stats["judi_count"],
             "clean_count": stats["clean_count"],
+            "source_info": source_info,
         })
         if request.headers.get('HX-Request'):
             return render(request, "html/partials/results_partial.html", ctx)

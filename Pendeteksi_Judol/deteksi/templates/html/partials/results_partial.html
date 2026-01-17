@@ -1,6 +1,40 @@
 {% load mathx %}
 {% load markdownify %}
 
+<!-- Source Info Box (Channel or Video) -->
+{% if source_info %}
+<div class="source-info-box fade-in">
+    {% if source_info.type == "channel" %}
+    <!-- Channel Info Layout -->
+    <div class="source-content channel-layout">
+        <div class="source-avatar">
+            <img src="{{ source_info.avatar }}" alt="{{ source_info.name }}" loading="lazy">
+        </div>
+        <div class="source-details">
+            <h2 class="source-title">{{ source_info.name }}</h2>
+            <span class="source-subtitle">{{ source_info.custom_url }}</span>
+        </div>
+    </div>
+    {% else %}
+    <!-- Video Info Layout -->
+    <div class="source-content video-layout">
+        <div class="source-thumbnail">
+            <img src="{{ source_info.thumbnail }}" alt="{{ source_info.title }}" loading="lazy">
+            <div class="play-overlay">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+            </div>
+        </div>
+        <div class="source-details">
+            <h2 class="source-title">{{ source_info.title }}</h2>
+            <span class="source-subtitle">{{ source_info.channel_name }}</span>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
 <div class="summary-dashboard fade-in">
     <div class="stat-card">
         <h3>Total Komentar</h3>

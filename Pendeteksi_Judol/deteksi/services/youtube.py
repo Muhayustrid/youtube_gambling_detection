@@ -278,6 +278,74 @@ def get_my_latest_videos(yt_creds, limit=6):
     except Exception as e:
         print(f"Error fetching my videos: {e}")
         return []
+
+
+def get_channel_info(identifier, id_type):
+    """
+    Mengambil informasi channel (nama, avatar, customUrl/handle).
+    Cost: 1 Unit.
+    Returns: dict dengan keys: name, avatar, custom_url, channel_id
+    """
+    try:
+        if id_type == "handle":
+            resp = youtube.channels().list(
+                part="snippet",
+                forHandle=identifier
+            ).execute()
+        elif id_type == "channel_id":
+            resp = youtube.channels().list(
+                part="snippet",
+                id=identifier
+            ).execute()
+        else:
+            return None
+
+        if not resp.get("items"):
+            return None
+        
+        item = resp["items"][0]
+        snippet = item["snippet"]
+        
+        return {
+            "channel_id": item["id"],
+            "name": snippet.get("title", "Unknown Channel"),
+            "avatar": snippet.get("thumbnails", {}).get("medium", snippet.get("thumbnails", {}).get("default", {})).get("url", ""),
+            "custom_url": snippet.get("customUrl", ""),
+            "description": snippet.get("description", "")[:200],  # Truncate description
+        }
+    except HttpError as e:
+        print(f"Error fetching channel info: {e}")
+        return None
+
+
+def get_video_info(video_id):
+    """
+    Mengambil informasi video (judul, thumbnail, channel name).
+    Cost: 1 Unit.
+    Returns: dict dengan keys: title, thumbnail, channel_name, channel_id
+    """
+    try:
+        resp = youtube.videos().list(
+            part="snippet",
+            id=video_id
+        ).execute()
+
+        if not resp.get("items"):
+            return None
+        
+        snippet = resp["items"][0]["snippet"]
+        
+        return {
+            "video_id": video_id,
+            "title": snippet.get("title", "Unknown Video"),
+            "thumbnail": snippet.get("thumbnails", {}).get("medium", snippet.get("thumbnails", {}).get("default", {})).get("url", ""),
+            "channel_name": snippet.get("channelTitle", "Unknown Channel"),
+            "channel_id": snippet.get("channelId", ""),
+            "published_at": snippet.get("publishedAt", ""),
+        }
+    except HttpError as e:
+        print(f"Error fetching video info: {e}")
+        return None
 # ===== END FUNGSI PLAYLIST & CHANNEL INFO =====
 
 # ===== FUNGSI OAUTH & MODERASI =====

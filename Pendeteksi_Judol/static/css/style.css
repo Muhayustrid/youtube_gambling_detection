@@ -387,6 +387,116 @@ body {
     color: var(--danger-color) !important;
 }
 
+/* Source Info Box (Channel/Video) */
+.source-info-box {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.source-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Channel Avatar */
+.source-avatar {
+    flex-shrink: 0;
+}
+
+.source-avatar img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-color);
+}
+
+/* Video Thumbnail */
+.source-thumbnail {
+    flex-shrink: 0;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.source-thumbnail img {
+    width: 100px;
+    height: 56px;
+    object-fit: cover;
+    display: block;
+}
+
+.play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.source-thumbnail:hover .play-overlay {
+    opacity: 1;
+}
+
+/* Source Details */
+.source-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.source-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.source-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    display: block;
+}
+
+/* Responsive Source Info */
+@media (max-width: 640px) {
+    .source-content {
+        flex-wrap: wrap;
+    }
+
+    .source-avatar img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .source-thumbnail img {
+        width: 80px;
+        height: 45px;
+    }
+
+    .source-title {
+        font-size: 1rem;
+    }
+}
+
 /* AI Insight Box */
 .ai-insight-box {
     background-color: #f9fafb;
