@@ -7,17 +7,19 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-# ===== KONFIGURASI UTAMA =====
 SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")  
 youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
-# ===== END KONFIGURASI UTAMA =====
 
-# ===== FUNGSI EKSTRAKSI VIDEO ID =====
 def extract_youtube_video_id(url: str) -> str | None:
     """
-    Mengekstrak video ID dari berbagai format URL YouTube.
-    Mengembalikan None jika URL tidak valid atau ID tidak ditemukan.
+    Mengekstrak ID video dari berbagai format URL YouTube.
+    
+    Args:
+        url (str): String URL YouTube (lengkap atau pendek).
+        
+    Returns:
+        str | None: ID Video jika ditemukan, None jika tidak valid.
     """
     try:
         if not isinstance(url, str) or not url:
@@ -25,27 +27,21 @@ def extract_youtube_video_id(url: str) -> str | None:
 
         u = urlparse(url)
         
-        # Cek domain youtu.be
         if u.netloc in ("youtu.be", "www.youtu.be"):
             return u.path.lstrip("/")
 
-        # Cek domain youtube.com
         if u.netloc in ("youtube.com", "www.youtube.com", "m.youtube.com"):
-            # Cek format URL /shorts/
             if "/shorts/" in u.path:
                 return u.path.split("/shorts/")[1].split("?")[0]
 
-            # Cek format URL /live/
             if "/live/" in u.path:
                 return u.path.split("/live/")[1].split("?")[0]
             
-            # Cek format URL /watch
             if u.path == "/watch":
                 qs = parse_qs(u.query)
                 video_id = qs.get("v", [None])[0]
                 return video_id
 
-            # Cek format URL /embed/
             if "/embed/" in u.path:
                 return u.path.split("/embed/")[1].split("?")[0]
 
@@ -53,10 +49,18 @@ def extract_youtube_video_id(url: str) -> str | None:
 
     except Exception:
         return None
-# ===== END FUNGSI EKSTRAKSI VIDEO ID =====
 
-# ===== FUNGSI PENGAMBILAN KOMENTAR =====
 def fetch_all_comment_threads(video_id: str, max_total: int = 200):
+    """
+    Mengambil thread komentar teratas dari sebuah video.
+    
+    Args:
+        video_id (str): ID video YouTube.
+        max_total (int): Batas maksimum jumlah komentar yang diambil.
+        
+    Returns:
+        list: Daftar item thread komentar dari API YouTube.
+    """
     items, page_token = [], None
     try:
         while True:
@@ -70,7 +74,7 @@ def fetch_all_comment_threads(video_id: str, max_total: int = 200):
             ).execute()
             batch = resp.get("items", [])
             items.extend(batch)
-            if len(items) >= max_total:  
+            if max_total != 0 and len(items) >= max_total:  
                 break
             page_token = resp.get("nextPageToken")
             if not page_token:
@@ -82,6 +86,15 @@ def fetch_all_comment_threads(video_id: str, max_total: int = 200):
     return items
 
 def fetch_all_replies(parent_id: str):
+    """
+    Mengambil semua balasan untuk komentar tertentu.
+    
+    Args:
+        parent_id (str): ID komentar induk.
+        
+    Returns:
+        list: Daftar item balasan komentar.
+    """
     replies, page_token = [], None
     while True:
         resp = youtube.comments().list(
@@ -98,7 +111,16 @@ def fetch_all_replies(parent_id: str):
     return replies
 
 def collect_comments(link: str, limit: int = 100):
-    """Return: list[dict]"""
+    """
+    Mengumpulkan komentar (termasuk balasan) dari sebuah video hingga batas tertentu.
+    
+    Args:
+        link (str): URL video YouTube.
+        limit (int): Batas maksimum total komentar.
+        
+    Returns:
+        list[dict]: Daftar dictionary berisi data komentar yang telah dinormalisasi.
+    """
     vid = extract_youtube_video_id(link)
     threads = fetch_all_comment_threads(vid, max_total=limit)
 
@@ -149,47 +171,52 @@ def collect_comments(link: str, limit: int = 100):
     if len(rows) > limit:
         rows = rows[:limit]
     return rows
-# ===== END FUNGSI PENGAMBILAN KOMENTAR =====
 
-# ===== FUNGSI EKSTRAKSI CHANNEL =====
 def extract_channel_info(input_str: str):
     """
-    Mengembalikan tuple (tipe, value).
-    tipe: 'video', 'channel_id', 'handle', atau None
+    Mendeteksi apakah input string adalah URL video, ID Channel, atau Handle.
+    
+    Args:
+        input_str (str): String input dari pengguna.
+        
+    Returns:
+        tuple: (tipe, value). Tipe bisa 'video', 'channel_id', 'handle', atau None.
     """
     input_str = input_str.strip()
     
-    # Cek jika input adalah Handle (contoh: @WindahBasudara)
     if input_str.startswith("@"):
         return "handle", input_str
         
     u = urlparse(input_str)
     
-    # Cek URL Video biasa
     if "watch" in u.path or "/shorts/" in u.path or "/live/" in u.path:
         return "video", extract_youtube_video_id(input_str)
     if "youtu.be" in u.netloc:
         return "video", extract_youtube_video_id(input_str)
         
-    # Cek URL Channel / Handle
     path_parts = u.path.strip("/").split("/")
     
     if len(path_parts) >= 1:
         if path_parts[0].startswith("@"):
-            return "handle", path_parts[0] # @username
+            return "handle", path_parts[0] 
         if path_parts[0] == "channel" and len(path_parts) > 1:
             return "channel_id", path_parts[1] 
         if path_parts[0] == "c" and len(path_parts) > 1:
             return "handle", path_parts[1] 
 
     return None, None
-# ===== END FUNGSI EKSTRAKSI CHANNEL =====
 
-# ===== FUNGSI PLAYLIST & CHANNEL INFO =====
 def get_channel_uploads_playlist(identifier, id_type):
     """
-    Mendapatkan ID Playlist 'Uploads' dari channel.
-    Cost: 1 Unit.
+    Mendapatkan ID playlist 'Uploads' dari sebuah channel untuk mengambil video-videonya.
+    Membutuhkan 1 Unit Biaya Kuota API.
+    
+    Args:
+        identifier (str): ID Channel atau Handle.
+        id_type (str): Tipe identifier ('handle' atau 'channel_id').
+        
+    Returns:
+        str | None: ID Playlist Uploads jika ditemukan.
     """
     try:
         if id_type == "handle":
@@ -208,7 +235,6 @@ def get_channel_uploads_playlist(identifier, id_type):
         if not resp.get("items"):
             return None
             
-        # Ambil ID playlist uploads
         return resp["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
     except HttpError as e:
         print(f"Error fetching channel: {e}")
@@ -216,8 +242,15 @@ def get_channel_uploads_playlist(identifier, id_type):
 
 def get_videos_from_playlist(playlist_id, limit=5):
     """
-    Mengambil daftar video ID dari playlist.
-    Cost: 1 Unit.
+    Mengambil daftar ID video dari playlist tertentu.
+    Membutuhkan 1 Unit Biaya Kuota API.
+    
+    Args:
+        playlist_id (str): ID Playlist.
+        limit (int): Jumlah maksimum video yang diambil.
+        
+    Returns:
+        list: Daftar Video ID.
     """
     video_ids = []
     try:
@@ -238,14 +271,20 @@ def get_videos_from_playlist(playlist_id, limit=5):
 
 def get_my_latest_videos(yt_creds, limit=6):
     """
-    Mengambil video terakhir dari channel user yang sedang login.
+    Mengambil daftar video terbaru dari channel pengguna yang sedang login.
+    
+    Args:
+        yt_creds (dict): Kredensial sesi pengguna.
+        limit (int): Jumlah video yang diambil.
+        
+    Returns:
+        list[dict]: Daftar video dengan detail id, judul, thumbnail, dan tanggal.
     """
     service = get_youtube_client_from_session(yt_creds)
     if not service:
         return []
 
     try:
-        # 1. Get Channel ID (Mine)
         channels_response = service.channels().list(
             mine=True,
             part="contentDetails"
@@ -256,7 +295,6 @@ def get_my_latest_videos(yt_creds, limit=6):
 
         uploads_playlist_id = channels_response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
 
-        # 2. Get Playlist Items (Videos)
         playlist_items_response = service.playlistItems().list(
             playlistId=uploads_playlist_id,
             part="snippet",
@@ -282,9 +320,15 @@ def get_my_latest_videos(yt_creds, limit=6):
 
 def get_channel_info(identifier, id_type):
     """
-    Mengambil informasi channel (nama, avatar, customUrl/handle).
-    Cost: 1 Unit.
-    Returns: dict dengan keys: name, avatar, custom_url, channel_id
+    Mengambil informasi dasar channel seperti nama, avatar, dan statistik.
+    Membutuhkan 1 Unit Biaya Kuota API.
+    
+    Args:
+        identifier (str): ID Channel atau Handle.
+        id_type (str): Tipe identifier.
+        
+    Returns:
+        dict | None: Informasi channel atau None jika gagal.
     """
     try:
         if id_type == "handle":
@@ -311,7 +355,7 @@ def get_channel_info(identifier, id_type):
             "name": snippet.get("title", "Unknown Channel"),
             "avatar": snippet.get("thumbnails", {}).get("medium", snippet.get("thumbnails", {}).get("default", {})).get("url", ""),
             "custom_url": snippet.get("customUrl", ""),
-            "description": snippet.get("description", "")[:200],  # Truncate description
+            "description": snippet.get("description", "")[:200],  
         }
     except HttpError as e:
         print(f"Error fetching channel info: {e}")
@@ -320,9 +364,14 @@ def get_channel_info(identifier, id_type):
 
 def get_video_info(video_id):
     """
-    Mengambil informasi video (judul, thumbnail, channel name).
-    Cost: 1 Unit.
-    Returns: dict dengan keys: title, thumbnail, channel_name, channel_id
+    Mengambil informasi detail tentang sebuah video.
+    Membutuhkan 1 Unit Biaya Kuota API.
+    
+    Args:
+        video_id (str): ID Video.
+        
+    Returns:
+        dict | None: Informasi video atau None jika gagal.
     """
     try:
         resp = youtube.videos().list(
@@ -346,12 +395,16 @@ def get_video_info(video_id):
     except HttpError as e:
         print(f"Error fetching video info: {e}")
         return None
-# ===== END FUNGSI PLAYLIST & CHANNEL INFO =====
 
-# ===== FUNGSI OAUTH & MODERASI =====
 def get_youtube_client_from_session(yt_creds):
     """
-    Membuat instance YouTube client (OAuth) dari dictionary credentials session.
+    Membuat klien API YouTube yang terautentikasi dari kredensial sesi.
+    
+    Args:
+        yt_creds (dict): Dictionary berisi token dan info kredensial.
+        
+    Returns:
+        Resource: Objek layanan Google API Client untuk YouTube.
     """
     if not yt_creds:
         return None
@@ -369,7 +422,15 @@ def get_youtube_client_from_session(yt_creds):
 
 def create_oauth_flow(redirect_uri, state=None):
     """
-    Membuat OAuth flow logic menggunakan Environment Variables.
+    Membuat objek OAuth Flow untuk proses autentikasi.
+    Menggunakan konfigurasi dari variabel lingkungan.
+    
+    Args:
+        redirect_uri (str): URL redirect setelah login sukses.
+        state (str): State token untuk keamanan CSRF.
+        
+    Returns:
+        Flow: Objek OAuth flow.
     """
     client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
     client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET")
@@ -404,26 +465,41 @@ def create_oauth_flow(redirect_uri, state=None):
 
 def fetch_youtube_user_info_oauth(creds):
     """
-    Mengambil informasi channel user (nama, avatar) menggunakan OAuth credentials.
+    Mengambil profil pengguna YouTube (channel sendiri) menggunakan token OAuth.
+    
+    Args:
+        creds (Credentials): Objek kredensial Google Auth.
+        
+    Returns:
+        dict: Informasi profil pengguna (nama, avatar, subs, views, video).
     """
     user_info = {
         "name": "YouTube User",
         "avatar": "",
+        "handle": "",
+        "subscribers": "0",
+        "videos": "0",
+        "views": "0"
     }
     try:
-        # Gunakan creds langsung
-        # Note: build() bisa dipanggil berulang, tidak masalah.
         yt_service = build("youtube", "v3", credentials=creds)
         channel_response = yt_service.channels().list(
-            part="snippet",
+            part="snippet,statistics",
             mine=True
         ).execute()
         
         if channel_response.get("items"):
-            channel = channel_response["items"][0]["snippet"]
+            item = channel_response["items"][0]
+            snippet = item["snippet"]
+            stats = item["statistics"]
+            
             user_info = {
-                "name": channel.get("title", "YouTube User"),
-                "avatar": channel.get("thumbnails", {}).get("default", {}).get("url", ""),
+                "name": snippet.get("title", "YouTube User"),
+                "avatar": snippet.get("thumbnails", {}).get("medium", snippet.get("thumbnails", {}).get("default", {})).get("url", ""),
+                "handle": snippet.get("customUrl", ""),
+                "subscribers": "{:,}".format(int(stats.get("subscriberCount", 0))),
+                "videos": "{:,}".format(int(stats.get("videoCount", 0))),
+                "views": "{:,}".format(int(stats.get("viewCount", 0)))
             }
     except Exception as e:
         print(f"Error fetching YouTube user info: {e}")
@@ -433,7 +509,10 @@ def fetch_youtube_user_info_oauth(creds):
 
 def revoke_youtube_token(token):
     """
-    Mengirim request revoke token ke Google.
+    Mencabut akses token (Logout) dari sisi server Google.
+    
+    Args:
+        token (str): Token akses atau refresh token yang akan dicabut.
     """
     if not token:
         return
@@ -447,8 +526,16 @@ def revoke_youtube_token(token):
 
 def perform_moderation_action(service, comment_ids, action, block_user):
     """
-    Melakukan aksi moderasi (delete atau reject/banAuthor.
-    Mengembalikan tuple (ok: bool, msg: str, error_type: str|None).
+    Mengeksekusi aksi moderasi massal pada komentar.
+    
+    Args:
+        service (Resource): Layanan YouTube API terautentikasi.
+        comment_ids (list): Daftar ID komentar.
+        action (str): Aksi yang dilakukan ('delete' atau 'reject').
+        block_user (bool): Apakah penulis komentar juga akan di-ban.
+        
+    Returns:
+        tuple: (sukses: bool, pesan: str, tipe_error: str|None)
     """
     if action == "delete":
         for cid in comment_ids:
@@ -465,4 +552,147 @@ def perform_moderation_action(service, comment_ids, action, block_user):
         
     else:
         return False, "Aksi tidak dikenal", "invalid_action"
-# ===== END FUNGSI OAUTH & MODERASI =====
+
+def get_my_videos_paginated(yt_creds, limit=6, page_token=None):
+    """
+    Mengambil video milik pengguna dengan dukungan halaman (pagination).
+    
+    Args:
+        yt_creds (dict): Kredensial sesi.
+        limit (int): Jumlah item per halaman.
+        page_token (str): Token halaman berikutnya (jika ada).
+        
+    Returns:
+        dict: {'items': list, 'next_page_token': str|None}
+    """
+    service = get_youtube_client_from_session(yt_creds)
+    if not service:
+        return {"items": [], "next_page_token": None}
+
+    try:
+        channels_response = service.channels().list(
+            mine=True,
+            part="contentDetails"
+        ).execute()
+
+        if not channels_response.get("items"):
+            return {"items": [], "next_page_token": None}
+
+        uploads_playlist_id = channels_response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+
+        playlist_items_response = service.playlistItems().list(
+            playlistId=uploads_playlist_id,
+            part="snippet",
+            maxResults=limit,
+            pageToken=page_token
+        ).execute()
+
+        videos = []
+        for item in playlist_items_response.get("items", []):
+            snippet = item["snippet"]
+            videos.append({
+                "id": snippet["resourceId"]["videoId"],
+                "title": snippet["title"],
+                "thumbnail": snippet["thumbnails"].get("medium", snippet["thumbnails"].get("default"))["url"],
+                "published_at": snippet["publishedAt"]
+            })
+        
+        return {
+            "items": videos,
+            "next_page_token": playlist_items_response.get("nextPageToken")
+        }
+
+    except Exception as e:
+        print(f"Error fetching paginated videos: {e}")
+        return {"items": [], "next_page_token": None}
+
+def get_my_videos_with_filter(yt_creds, limit=50, date_filter='today'):
+    """
+    Mengambil video pengguna dan menyaringnya berdasarkan rentang waktu.
+    Melakukan pengambilan halaman (pagination) secara otomatis hingga batas limit atau filter terpenuhi.
+    
+    Args:
+        yt_creds (dict): Kredensial sesi.
+        limit (int): Batas maksimum video yang dikembalikan.
+        date_filter (str): Filter waktu ('today', '1week', '1month', '6months', '12months').
+        
+    Returns:
+        dict: {'items': list} Daftar video yang sesuai kriteria.
+    """
+    from datetime import datetime, timedelta
+    
+    service = get_youtube_client_from_session(yt_creds)
+    if not service:
+        return {"items": []}
+
+    try:
+        now = datetime.utcnow()
+        if date_filter == 'today':
+            published_after = (now - timedelta(days=1)).isoformat("T") + "Z"
+        elif date_filter == '1week':
+            published_after = (now - timedelta(weeks=1)).isoformat("T") + "Z"
+        elif date_filter == '1month':
+            published_after = (now - timedelta(days=30)).isoformat("T") + "Z"
+        elif date_filter == '6months':
+            published_after = (now - timedelta(days=180)).isoformat("T") + "Z"
+        elif date_filter == '12months':
+            published_after = (now - timedelta(days=365)).isoformat("T") + "Z"
+        else:
+            published_after = (now - timedelta(days=365)).isoformat("T") + "Z"
+
+        channels_response = service.channels().list(
+            mine=True,
+            part="contentDetails"
+        ).execute()
+
+        if not channels_response.get("items"):
+            return {"items": []}
+
+        uploads_playlist_id = channels_response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+
+        videos = []
+        page_token = None
+        
+        while len(videos) < limit:
+            request_limit = min(50, limit - len(videos))
+            
+            playlist_params = {
+                "playlistId": uploads_playlist_id,
+                "part": "snippet",
+                "maxResults": request_limit,
+            }
+            
+            if page_token:
+                playlist_params["pageToken"] = page_token
+            
+            playlist_items_response = service.playlistItems().list(**playlist_params).execute()
+            
+            for item in playlist_items_response.get("items", []):
+                snippet = item["snippet"]
+                published_at = snippet["publishedAt"]
+                
+                video_date = datetime.fromisoformat(published_at.replace('Z', '+00:00'))
+                filter_date = datetime.fromisoformat(published_after.replace('Z', '+00:00'))
+                
+                if video_date < filter_date:
+                    continue
+                
+                videos.append({
+                    "id": snippet["resourceId"]["videoId"],
+                    "title": snippet["title"],
+                    "thumbnail": snippet["thumbnails"].get("medium", snippet["thumbnails"].get("default"))["url"],
+                    "published_at": published_at
+                })
+                
+                if len(videos) >= limit:
+                    break
+            
+            page_token = playlist_items_response.get("nextPageToken")
+            if not page_token:
+                break
+        
+        return {"items": videos}
+
+    except Exception as e:
+        print(f"Error fetching filtered videos: {e}")
+        return {"items": []}

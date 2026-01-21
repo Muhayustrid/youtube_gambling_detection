@@ -1,6 +1,9 @@
 
-// ===== PREPARATION & UTILS =====
-
+/**
+ * Mendeteksi tipe URL yang dimasukkan (Channel atau Video).
+ * @param {string} url - URL YouTube yang akan diperiksa.
+ * @returns {string} - 'channel', 'video', atau 'unknown'.
+ */
 window.detectUrlType = function (url) {
     if (!url) return 'unknown';
     if (url.includes('@') || url.includes('/channel/') || url.includes('/c/') || url.includes('/user/')) {
@@ -10,32 +13,36 @@ window.detectUrlType = function (url) {
         return 'video';
     }
     return 'unknown';
-    return 'unknown';
 };
 
+/**
+ * Memicu analisis video secara otomatis berdasarkan URL yang diberikan.
+ * Mengisi input URL, memberikan umpan balik visual, dan mengklik tombol analisis.
+ * @param {string} url - URL video yang akan dianalisis.
+ */
 window.analyzeVideo = function (url) {
     const urlInput = document.getElementById('urlInput');
     const analyzeBtn = document.getElementById('analyzeBtn');
 
     if (urlInput && analyzeBtn) {
         urlInput.value = url;
-        // Trigger input event to handle UI toggles
         urlInput.dispatchEvent(new Event('input'));
 
-        // Validation visual feedback
         urlInput.classList.add('highlight-input');
         setTimeout(() => urlInput.classList.remove('highlight-input'), 500);
 
-        // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        // Trigger analysis
         setTimeout(() => {
             analyzeBtn.click();
         }, 300);
     }
 };
 
+/**
+ * Mengatur visibilitas dan status (enabled/disabled) input form berdasarkan tipe URL.
+ * Menampilkan input khusus channel atau video sesuai deteksi URL.
+ */
 window.toggleInputFields = function () {
     const urlInput = document.getElementById('urlInput');
     const videoInputContainer = document.getElementById('videoInputContainer');
@@ -53,29 +60,29 @@ window.toggleInputFields = function () {
     console.log("Input berubah, Tipe:", urlType);
 
     if (urlType === 'channel') {
-        // MODE CHANNEL: Tampilkan input khusus channel
         if (videoInputContainer) videoInputContainer.classList.add('hidden');
         if (channelInputContainer) channelInputContainer.classList.remove('hidden');
         if (commentsPerVideoContainer) commentsPerVideoContainer.classList.remove('hidden');
 
-        // Aktifkan select channel, Matikan select video
         if (maxResultsSelect) maxResultsSelect.disabled = true;
         if (videoCountSelect) videoCountSelect.disabled = false;
         if (commentsPerVideoSelect) commentsPerVideoSelect.disabled = false;
 
     } else {
-        // MODE VIDEO (Default): Tampilkan input video biasa
         if (videoInputContainer) videoInputContainer.classList.remove('hidden');
         if (channelInputContainer) channelInputContainer.classList.add('hidden');
         if (commentsPerVideoContainer) commentsPerVideoContainer.classList.add('hidden');
 
-        // Aktifkan select video, Matikan select channel
         if (maxResultsSelect) maxResultsSelect.disabled = false;
         if (videoCountSelect) videoCountSelect.disabled = true;
         if (commentsPerVideoSelect) commentsPerVideoSelect.disabled = true;
     }
 };
 
+/**
+ * Memperbarui tampilan Floating Action Button (FAB) berdasarkan jumlah item yang dipilih.
+ * Menampilkan jumlah item terpilih pada badge FAB.
+ */
 window.updateFab = function () {
     const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
     const fabContainer = document.getElementById('fabContainer');
@@ -85,12 +92,15 @@ window.updateFab = function () {
     if (fabCount) fabCount.innerText = checkedBoxes.length;
     if (modCount) modCount.innerText = checkedBoxes.length;
 
-    // Only show/hide FAB if it exists (user is logged in)
     if (fabContainer) {
         checkedBoxes.length > 0 ? fabContainer.classList.remove('hidden') : fabContainer.classList.add('hidden');
     }
 };
 
+/**
+ * Secara otomatis mencentang baris komentar yang terdeteksi sebagai 'gambling'.
+ * Memicu pembaruan FAB setelah pencentangan otomatis.
+ */
 window.autoCheckGamblingComments = function () {
     const checkboxes = document.querySelectorAll('.row-checkbox');
     if (checkboxes.length > 0) {
@@ -108,9 +118,13 @@ window.autoCheckGamblingComments = function () {
     }
 };
 
+/**
+ * Mengubah status centang semua checkbox baris berdasarkan status checkbox 'Select All'.
+ * @param {HTMLInputElement} source - Checkbox utama (Select All).
+ */
 window.toggleAll = function (source) {
     const checkboxes = document.querySelectorAll('.row-checkbox');
-    if (checkboxes.length === 0) return; // No checkboxes = user not logged in
+    if (checkboxes.length === 0) return;
 
     checkboxes.forEach(cb => {
         if (cb.closest('tr').style.display !== 'none') {
@@ -120,9 +134,13 @@ window.toggleAll = function (source) {
     window.updateFab();
 };
 
+/**
+ * Memfilter tampilan tabel komentar berdasarkan tipe (semua, bersih, atau judol).
+ * @param {string} value - Nilai filter ('all', 'bersih', 'gambling').
+ */
 window.filterTable = function (value) {
     const rows = document.querySelectorAll('.comment-row');
-    if (rows.length === 0) return; // No rows = no results or user not logged in
+    if (rows.length === 0) return;
 
     rows.forEach(row => {
         if (value === 'all') row.style.display = '';
@@ -131,42 +149,58 @@ window.filterTable = function (value) {
     window.updateFab();
 };
 
-// ===== MODAL HELPERS =====
-
+/**
+ * Membuka modal konfirmasi moderasi jika user sudah login (FAB tersedia).
+ * Jika user belum login, membuka modal permintaan login.
+ */
 window.openModerationModal = function () {
     const fabContainer = document.getElementById('fabContainer');
 
     if (!fabContainer) {
-        // FAB tidak ada = user belum login
         const loginModal = document.getElementById('loginRequiredModal');
         if (loginModal) loginModal.classList.remove('hidden');
     } else {
-        // FAB ada = user sudah login
         const modModal = document.getElementById('moderationModal');
         if (modModal) modModal.classList.remove('hidden');
     }
 };
 
+/**
+ * Menutup modal moderasi.
+ */
 window.closeModerationModal = function () {
     const el = document.getElementById('moderationModal');
     if (el) el.classList.add('hidden');
 };
 
+/**
+ * Menutup modal yang meminta login.
+ */
 window.closeLoginRequiredModal = function () {
     const el = document.getElementById('loginRequiredModal');
     if (el) el.classList.add('hidden');
 };
 
+/**
+ * Menutup modal error.
+ */
 window.closeErrorModal = function () {
     const el = document.getElementById('errorModal');
     if (el) el.classList.add('hidden');
 };
 
+/**
+ * Menutup modal sukses.
+ */
 window.closeSuccessModal = function () {
     const el = document.getElementById('successModal');
     if (el) el.classList.add('hidden');
 };
 
+/**
+ * Membuka modal sukses dengan pesan tertentu.
+ * @param {string} msg - Pesan sukses yang akan ditampilkan.
+ */
 window.openSuccessModal = function (msg) {
     const msgEl = document.getElementById('successModalMsg');
     const modalEl = document.getElementById('successModal');
@@ -174,6 +208,10 @@ window.openSuccessModal = function (msg) {
     if (modalEl) modalEl.classList.remove('hidden');
 };
 
+/**
+ * Membuka modal error dengan pesan tertentu.
+ * @param {string} msg - Pesan error yang akan ditampilkan.
+ */
 window.openErrorModal = function (msg) {
     const msgEl = document.getElementById('errorModalMsg');
     const modalEl = document.getElementById('errorModal');
@@ -181,26 +219,75 @@ window.openErrorModal = function (msg) {
     if (modalEl) modalEl.classList.remove('hidden');
 };
 
-// ===== INITIALIZATION & EVENTS =====
+/**
+ * Menginisialisasi logika sidebar (buka/tutup) untuk tampilan mobile.
+ * Menangani event klik tombol burger, overlay, dan tombol escape.
+ */
+window.initSidebar = function () {
+    const burgerBtn = document.getElementById('burgerMenu');
+    const burgerBtnSidebar = document.getElementById('burgerMenuSidebar');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
 
+    function toggleSidebar() {
+        if (sidebar) sidebar.classList.toggle('active');
+        if (overlay) overlay.classList.toggle('active');
+    }
+
+    function closeSidebar() {
+        if (sidebar) sidebar.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
+    }
+
+    if (burgerBtn) {
+        burgerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+    }
+
+    if (burgerBtnSidebar) {
+        burgerBtnSidebar.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+
+    const sidebarLinks = document.querySelectorAll('.sidebar-item');
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', closeSidebar);
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSidebar();
+    });
+};
+
+/**
+ * Fungsi inisialisasi utama aplikasi.
+ * Mengatur konfigurasi, sidebar, event listener form, dan logika moderasi.
+ * @param {Object} config - Konfigurasi situs (csrfToken, moderateUrl, dll).
+ */
 window.initMain = function (config) {
     window.siteConfig = config || {};
     console.log("Main Script Initialized with Config");
 
-    // --- Definisi Elemen Form ---
+    window.initSidebar();
+
     const urlInput = document.getElementById('urlInput');
 
-    // --- Pasang Event Listener Form ---
     if (urlInput) {
         urlInput.addEventListener('input', window.toggleInputFields);
         urlInput.addEventListener('change', window.toggleInputFields);
         window.toggleInputFields();
     }
 
-    // --- Re-inisialisasi FAB saat load ---
     window.updateFab();
 
-    // Event Listener Moderasi 
     const confirmBtn = document.getElementById('confirmModerationBtn');
     if (confirmBtn) {
         confirmBtn.addEventListener('click', function () {
@@ -209,7 +296,6 @@ window.initMain = function (config) {
 
             if (ids.length === 0) return;
 
-            // UI Loading
             const originalText = this.innerHTML;
             this.innerHTML = 'Memproses...';
             this.disabled = true;
@@ -261,7 +347,10 @@ window.initMain = function (config) {
     }
 };
 
-// HTMX Hooks
+/**
+ * Event listener HTMX: Dijalankan setelah konten baru dimuat (afterSwap).
+ * Memperbarui FAB dan otomatis mencentang komentar judi.
+ */
 document.body.addEventListener('htmx:afterSwap', function (evt) {
     if (evt.detail.target.id === "resultsContainer") {
         window.updateFab();
@@ -269,6 +358,9 @@ document.body.addEventListener('htmx:afterSwap', function (evt) {
     }
 });
 
+/**
+ * Event listener HTMX: Dijalankan setelah request selesai dan sukses (afterRequest).
+ */
 document.body.addEventListener('htmx:afterRequest', function (evt) {
     if (evt.detail.target.id === "resultsContainer" && evt.detail.successful) {
         window.updateFab();
@@ -276,6 +368,9 @@ document.body.addEventListener('htmx:afterRequest', function (evt) {
     }
 });
 
+/**
+ * Event listener HTMX: Dijalankan setelah konten menetap di DOM (afterSettle).
+ */
 document.body.addEventListener('htmx:afterSettle', function (evt) {
     if (evt.detail.target.id === "resultsContainer") {
         window.updateFab();

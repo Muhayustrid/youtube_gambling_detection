@@ -6,8 +6,6 @@ from django.core.cache import cache
 from ..llm.openrouter_client import call_openrouter_with_fallback
 from django.conf import settings
 
-# Setup Logging
-# Parent directory of 'services' is 'deteksi'
 BASE_APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
 LLM_LOG_DIR = os.path.join(BASE_APP_DIR, "llm_logs")
 os.makedirs(LLM_LOG_DIR, exist_ok=True)
@@ -16,6 +14,14 @@ LLM_LOG_FILE = os.path.join(LLM_LOG_DIR, "llm_calls.jsonl")
 CACHE_TTL = 60 * 10 
 
 def _log_llm_call(prompt: str, response: str, meta: dict):
+    """
+    Mencatat pemanggilan LLM ke dalam file log JSONL.
+    
+    Args:
+        prompt (str): Prompt input yang dikirim ke LLM.
+        response (str): Respons teks dari LLM.
+        meta (dict): Metadata pemanggilan (model, latency, dll).
+    """
     entry = {
         "timestamp": timezone.now().isoformat(),
         "prompt": prompt,
@@ -27,7 +33,13 @@ def _log_llm_call(prompt: str, response: str, meta: dict):
 
 def _clean_llm_response(text: str) -> str:
     """
-    Clean raw markdown from LLM (remove code blocks)
+    Membersihkan format markdown code block dari respons LLM.
+    
+    Args:
+        text (str): Teks respons mentah dari LLM.
+        
+    Returns:
+        str: Teks bersih tanpa wrapper markdown.
     """
     if not text:
         return ""
@@ -45,10 +57,18 @@ def _clean_llm_response(text: str) -> str:
             
     return text
 
-def generate_insight(url, limit, stats, results_sample_check):
+def generate_insight(url, limit, stats, results_sample_check=None):
     """
-    Generate insight using LLM based on statistics.
-    results_sample_check: list of results to check if any spam exists (for fallback).
+    Menghasilkan analisis insight menggunakan LLM berdasarkan statistik komentar.
+    
+    Args:
+        url (str): URL sumber data.
+        limit (int): Batas pengambilan data.
+        stats (dict): Statistik hasil analisis komentar.
+        results_sample_check (list, optional): Data sampel untuk pengecekan fallback.
+        
+    Returns:
+        tuple: (insight_raw, insight_cleaned, meta)
     """
     cache_key = f"llm_insight::{url}::limit::{limit}"
     cached = cache.get(cache_key)
@@ -56,7 +76,6 @@ def generate_insight(url, limit, stats, results_sample_check):
     if cached:
         return cached.get("insight"), cached.get("html"), cached.get("meta", {})
 
-    # Construct prompt
     prompt_text = (
     f"""
     Tugas: Analisis pola indikasi judi online dan validasi potensi salah deteksi (False Positive).
@@ -113,8 +132,7 @@ def generate_insight(url, limit, stats, results_sample_check):
         except Exception:
             pass
     else:
-        # Fallback Logic
-        has_spam = any(item["label"] == 1 for item in results_sample_check)
+        has_spam = stats['judi_count'] > 0
         if has_spam:
             total = stats['total'] if stats['total'] > 0 else 1
             ratio = (stats['judi_count'] / total) * 100

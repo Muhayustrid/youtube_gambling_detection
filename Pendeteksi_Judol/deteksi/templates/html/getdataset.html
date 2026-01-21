@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- ===== HERO SECTION ===== -->
+<div class="hero-section">
+    <h1>Download Dataset Komentar</h1>
+    <p class="subtitle">Ambil data komentar YouTube dan hasil prediksi untuk keperluan dataset</p>
+</div>
+<!-- ===== END HERO SECTION ===== -->
+
+<!-- ===== FORM ANALISIS ===== -->
+<form class="analysis-container" hx-post="{% url 'get_dataset' %}" hx-target="#resultsContainer"
+    hx-indicator="#loadingState" hx-swap="innerHTML">
+
+    {% csrf_token %}
+    <!-- Input URL -->
+    <div class="input-group">
+        <label for="urlInput">Video URL atau Channel</label>
+        <input type="text" name="url" id="urlInput"
+            placeholder="https://youtube.com/watch?v=/channel atau @WindahBasudara" spellcheck="false" required
+            value="{{ url|default:'' }}"
+            oninput="this.classList.remove('input-error'); document.getElementById('urlInlineError').innerHTML = '';">
+        <div id="urlInlineError"></div>
+    </div>
+
+    <!-- Input Video Mode -->
+    <div class="input-group" id="videoInputContainer">
+        <label for="maxResults">Total Komentar Diambil</label>
+        <select name="limit" id="maxResults">
+            <option value="20">20 Komentar</option>
+            <option value="50" selected>50 Komentar</option>
+            <option value="100">100 Komentar</option>
+            <option value="200">200 Komentar</option>
+            <option value="500">500 Komentar</option>
+            <option value="1000">1000 Komentar</option>
+        </select>
+    </div>
+
+    <!-- Input Channel Mode -->
+    <div class="input-group hidden" id="channelInputContainer">
+        <label for="videoCount">Analisis Video Terakhir</label>
+        <select name="video_count" id="videoCount" disabled>
+            <option value="3">3 Video</option>
+            <option value="5" selected>5 Video</option>
+            <option value="10">10 Video</option>
+        </select>
+    </div>
+
+    <div class="input-group hidden" id="commentsPerVideoContainer">
+        <label for="commentsPerVideo">Sampel Komentar per Video</label>
+        <select name="comments_per_video" id="commentsPerVideo" disabled>
+            <option value="20">20 Komentar</option>
+            <option value="50" selected>50 Komentar</option>
+            <option value="100">100 Komentar</option>
+        </select>
+        <small style="color: #6b7280; font-size: 0.8rem; margin-top: 4px; display: block;">
+            *Total = (Jml Video) x (Komentar per Video)
+        </small>
+    </div>
+
+    <button type="submit" class="btn-analyze" id="analyzeBtn">
+        Mulai Analisis
+    </button>
+</form>
+<!-- ===== END FORM ANALISIS ===== -->
+
+<!-- ===== LOADING STATE ===== -->
+<div class="loading-state htmx-indicator" id="loadingState">
+    <div class="spinner"></div>
+    <p>Sedang mengambil komentar, melakukan preprocessing, dan prediksi...</p>
+</div>
+<!-- ===== END LOADING STATE ===== -->
+
+<!-- ===== HASIL ANALISIS ===== -->
+<div class="results-section" id="resultsContainer">
+    {% if rows %}
+    {% include 'html/partials/results_partial.html' with is_dataset_view=True %}
+    {% endif %}
+</div>
+<!-- ===== END HASIL ANALISIS ===== -->
+
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (typeof initMain === 'function') {
+            initMain({
+                csrfToken: '{{ csrf_token }}',
+                moderateUrl: ""
+            });
+        }
+    });
+
+    function exportTableToCSV(filename) {
+        const table = document.getElementById("commentsTable");
+        if (!table) return;
+
+        const rows = table.querySelectorAll("tr");
+        let csvContent = "";
+        rows.forEach(row => {
+            const cols = row.querySelectorAll("th, td");
+            const rowData = [];
+
+            cols.forEach((col, index) => {
+                if (col.querySelector("input[type='checkbox']") || (index === 0 && col.innerHTML.trim() === '')) {
+                    return; 
+                }
+                let text = col.innerText.replace(/"/g, '""').trim();
+                rowData.push(`"${text}"`);
+            });
+
+            if (rowData.length > 0) {
+                csvContent += rowData.join(",") + "\n";
+            }
+        });
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+</script>
+{% endblock %}

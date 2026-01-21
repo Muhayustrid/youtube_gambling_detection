@@ -26,13 +26,16 @@
 
     <nav class="navbar">
         <div class="nav-left">
+            {% if oauth_ok %}
             <button class="burger-menu" id="burgerMenu" aria-label="Menu">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <line x1="3" y1="12" x2="21" y2="12"></line>
                     <line x1="3" y1="6" x2="21" y2="6"></line>
                     <line x1="3" y1="18" x2="21" y2="18"></line>
                 </svg>
             </button>
+            {% endif %}
             <a href="/" style="text-decoration:none; color:inherit;"><span class="brand-name">AntiSlot</span></a>
         </div>
         <div class="nav-right">
@@ -86,6 +89,43 @@
         </div>
     </nav>
 
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay hidden" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button class="burger-menu" id="burgerMenuSidebar" aria-label="Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <a href="/" style="text-decoration:none; color:inherit;"><span class="brand-name">AntiSlot</span></a>
+        </div>
+        <div class="sidebar-menu">
+            <a href="/" class="sidebar-item {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Beranda</span>
+            </a>
+            <a href="{% url 'video_saya' %}"
+                class="sidebar-item {% if request.resolver_match.url_name == 'video_saya' %}active{% endif %}">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                </svg>
+                <span>Video Saya</span>
+            </a>
+        </div>
+    </aside>
+
     <main class="main-content">
         {% block content %}
         {% endblock %}
@@ -109,7 +149,6 @@
     </footer>
 
     <script>
-        // UI Logic
         document.addEventListener('DOMContentLoaded', () => {
             const profileContainer = document.getElementById('profileContainer');
             const profileDropdown = document.getElementById('profileDropdown');
@@ -117,7 +156,6 @@
             const closeSuggestBtn = document.getElementById('closeSuggestBtn');
             const isLoggedIn = {{ oauth_ok|yesno:"true,false"}};
 
-        // Toggle Dropdown 
         if (profileContainer && isLoggedIn) {
             profileContainer.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -133,7 +171,6 @@
             });
         }
 
-        // Close Suggest Menu
         if (closeSuggestBtn && suggestLoginMenu) {
             closeSuggestBtn.addEventListener('click', (e) => {
                 e.stopPropagation();

@@ -153,6 +153,14 @@ STATIC_ROOT = BASE_DIR/"staticfiles"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Cache settings
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
 
 
 # Static files (CSS, JavaScript, Images)

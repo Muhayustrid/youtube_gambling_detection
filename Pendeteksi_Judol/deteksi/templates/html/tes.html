@@ -1,55 +1,79 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container my-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <h1 class="text-center mb-4">Detektor Komentar Judol</h1>
-      <div class="card shadow-sm mb-4">
-        <div class="card-body">
-          <form method="POST">
-            {% csrf_token %}
-            <div class="mb-3">
-              <label for="comment" class="form-label">Masukkan komentar</label>
-              <textarea id="comment" name="comment" rows="4" class="form-control" placeholder="Tulis komentar di sini..."></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Deteksi</button>
-          </form>
+<div class="hero-section">
+  <h1>Detektor Komentar Judol</h1>
+  <p class="subtitle">Uji coba deteksi komentar secara manual</p>
+</div>
+
+<div class="analysis-container">
+  <form method="POST" style="width: 100%; display: flex; flex-direction: column; gap: 1.5rem;">
+    {% csrf_token %}
+    <div class="input-group">
+      <label for="comment">Masukkan komentar</label>
+      <textarea id="comment" name="comment" rows="4" placeholder="Tulis komentar di sini..."
+        required>{{ text }}</textarea>
+    </div>
+    <button type="submit" class="btn-analyze">Deteksi</button>
+  </form>
+</div>
+
+{% if text %}
+<div class="results-section" style="width: 100%; max-width: 600px; margin-top: 2rem;">
+  <!-- Result Card -->
+  <div
+    style="background: white; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+
+    <!-- Header -->
+    <div
+      style="padding: 1rem 1.5rem; background: #f9fafb; border-bottom: 1px solid var(--border-color); font-weight: 600; color: var(--text-primary);">
+      Hasil Deteksi
+    </div>
+
+    <!-- Body -->
+    <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+
+      <!-- Input & Clean Text -->
+      <div style="display: grid; gap: 1rem;">
+        <div>
+          <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Input Asli</span>
+          <p style="margin-top: 0.25rem; white-space: pre-wrap;">{{ text }}</p>
+        </div>
+        <div>
+          <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Input Bersih
+            (Clean)</span>
+          <p
+            style="margin-top: 0.25rem; font-family: monospace; background: #f3f4f6; padding: 0.5rem; border-radius: 6px;">
+            {{ clean }}</p>
         </div>
       </div>
 
-      {% if text %}
-      <div class="card shadow-sm">
-        <div class="card-header bg-light">
-          <strong>Hasil Deteksi</strong>
+      <!-- Stats Grid -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <!-- Prediction -->
+        <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem;">
+          <span
+            style="display: block; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">PREDIKSI</span>
+          {% if proba >= 0.50 %}
+          <span class="badge badge-gambling" style="font-size: 1rem; padding: 0.5rem 1rem;">Promosi Judol</span>
+          {% else %}
+          <span class="badge badge-clean" style="font-size: 1rem; padding: 0.5rem 1rem;">Bukan Judol</span>
+          {% endif %}
         </div>
-        <div class="card-body">
-          <p><b>Input:</b> {{ text }}</p>
-          <p><b>Clean:</b> <code>{{ clean }}</code></p>
 
-          <p>
-            <b>Prediksi:</b>
-            {% if proba >= 0.50 %}
-              <span class="badge bg-danger">Promosi Judol</span>
-            {% else %}
-              <span class="badge bg-success">Bukan Judol</span>
-            {% endif %}
-          </p>
-
-          <p><b>Probabilitas:</b></p>
-          <div class="progress" style="height: 25px;">
-            <div class="progress-bar {% if proba >= 0.50 %}bg-danger{% else %}bg-success{% endif %}" 
-                 role="progressbar" 
-                 style="width: {{ proba|floatformat:0 }}%;" 
-                 aria-valuenow="{{ proba|floatformat:0 }}" 
-                 aria-valuemin="0" aria-valuemax="100">
-              {{ proba|floatformat:2 }}%
-            </div>
+        <!-- Probability -->
+        <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem;">
+          <span
+            style="display: block; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">PROBABILITAS
+            JUDOL</span>
+          <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+            <span style="font-size: 1.5rem; font-weight: 600;">{{ proba|floatformat:4 }}</span>
+            <span style="font-size: 0.875rem; color: var(--text-secondary);">({% widthratio proba 1 100 %}%)</span>
           </div>
         </div>
       </div>
-      {% endif %}
 
     </div>
   </div>
 </div>
+{% endif %}
 {% endblock %}

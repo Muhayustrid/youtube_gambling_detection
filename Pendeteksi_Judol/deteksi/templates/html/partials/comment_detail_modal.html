@@ -1,0 +1,118 @@
+<div id="detailModalOverlay" class="modal-overlay" _="on click if target is me remove me"
+    onclick="if(event.target === this) this.remove()">
+    <div class="modal-container" style="max-width: 900px; width: 95%;">
+
+        <!-- Header -->
+        <div class="modal-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="margin: 0; text-align: left; font-size: 1.25rem;">Detail Prediksi & Koefisien</h2>
+            <button type="button" class="close-btn" onclick="document.getElementById('detailModalOverlay').remove()"
+                style="background:none; border:none; cursor:pointer; color:var(--text-secondary);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body" style="text-align: left; display: block;">
+
+            <!-- Comment Box -->
+            <div
+                style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+                <p style="margin: 0; color: var(--text-primary); white-space: pre-wrap;">{{ text }}</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <!-- Prediction -->
+                <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem;">
+                    <span
+                        style="display: block; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">PREDIKSI</span>
+                    <span class="badge {{ label|yesno:'badge-gambling,badge-clean' }}"
+                        style="font-size: 1rem; padding: 0.5rem 1rem;">
+                        {{ label|yesno:'Promosi Judi Online,Komentar Bersih' }}
+                    </span>
+                </div>
+
+                <!-- Probability -->
+                <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem;">
+                    <span
+                        style="display: block; font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem;">PROBABILITAS
+                        PROMOSI JUDI ONLINE</span>
+                    <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+                        <span style="font-size: 1.5rem; font-weight: 600;">{{ proba_judol|floatformat:4 }}</span>
+                        <span style="font-size: 0.875rem; color: var(--text-secondary);">({{proba_judol_pct|floatformat:2 }}%)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Features -->
+            <div style="margin-bottom: 1rem;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        class="sparkle-icon">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    Top Fitur yang Berpengaruh
+                </h3>
+
+                <div class="table-responsive"
+                    style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <table class="results-table" style="font-size: 0.9rem; border: none;">
+                        <thead style="position: sticky; top: 0; z-index: 10;">
+                            <tr>
+                                <th style="background: #f9fafb;">Fitur</th>
+                                <th style="background: #f9fafb; text-align: right;">TF-IDF</th>
+                                <th style="background: #f9fafb; text-align: right;">Koefisien</th>
+                                <th style="background: #f9fafb; text-align: right;">Kontribusi</th>
+                                <th style="background: #f9fafb;">Arah</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feat in features %}
+                            <tr>
+                                <td>
+                                    <span
+                                        style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-family: monospace;">
+                                        {{ feat.feature }}
+                                    </span>
+                                </td>
+                                <td style="text-align: right;">{{ feat.tfidf|floatformat:4 }}</td>
+                                <td style="text-align: right;">{{ feat.coefficient|floatformat:4 }}</td>
+                                <td
+                                    style="text-align: right; font-weight: 500; color: {% if feat.contribution > 0 %}var(--danger-color){% else %}var(--success-color){% endif %};">
+                                    {{ feat.contribution|floatformat:4 }}
+                                </td>
+                                <td>
+                                    {% if feat.contribution > 0 %}
+                                    <span
+                                        style="color: var(--danger-color); display: flex; align-items: center; gap: 4px;">
+                                        Promosi
+                                    </span>
+                                    {% else %}
+                                    <span
+                                        style="color: var(--success-color); display: flex; align-items: center; gap: 4px;">
+                                        Non-Promosi
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5"
+                                    style="text-align: center; padding: 1rem; color: var(--text-secondary);">
+                                    Tidak ada fitur spesifik yang signifikan.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

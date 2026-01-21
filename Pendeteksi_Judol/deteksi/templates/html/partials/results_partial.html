@@ -50,10 +50,10 @@
     </div>
 </div>
 
-{% if llm_insight %}
-<div class="ai-insight-box fade-in">
-    <div class="insight-header" onclick="toggleInsight()" role="button" tabindex="0" aria-expanded="true"
-        aria-controls="insightContent">
+{% if analysis_id and not is_dataset_view %}
+<div class="ai-insight-box fade-in" hx-get="{% url 'get_ai_insight' %}?analysis_id={{ analysis_id }}" hx-trigger="load"
+    hx-swap="outerHTML">
+    <div class="insight-header" aria-expanded="true">
         <div class="insight-title">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round" class="sparkle-icon">
@@ -62,37 +62,41 @@
             </svg>
             <h3>AI Insight</h3>
         </div>
-        <button type="button" class="insight-toggle-btn" id="insightToggleBtn" aria-label="Toggle AI Insight">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" class="chevron-icon">
-                <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-        </button>
     </div>
-    <div class="insight-content" id="insightContent">
-        {{ llm_insight|markdownify }}
+    <div class="insight-content">
+        <div class="loading-state" style="margin-top: 1rem; margin-bottom: 1rem;">
+            <div class="spinner" style="width: 24px; height: 24px; margin: 0 auto;"></div>
+            <p style="text-align: center; margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">Sedang
+                menganalisis...</p>
+        </div>
     </div>
 </div>
-<script>
-    function toggleInsight() {
-        const content = document.getElementById('insightContent');
-        const toggleBtn = document.getElementById('insightToggleBtn');
-        const header = document.querySelector('.insight-header');
-
-        if (content.classList.contains('collapsed')) {
-            content.classList.remove('collapsed');
-            toggleBtn.classList.remove('rotated');
-            header.setAttribute('aria-expanded', 'true');
-        } else {
-            content.classList.add('collapsed');
-            toggleBtn.classList.add('rotated');
-            header.setAttribute('aria-expanded', 'false');
-        }
-    }
-</script>
 {% endif %}
 
-<div class="results-header fade-in">
+<div class="results-header fade-in"
+    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    {% if is_dataset_view %}
+    <div style="display: flex; gap: 1rem; align-items: center;">
+        <div class="filter-group" style="margin: 0;">
+            <label for="filterSelect">Filter:</label>
+            <select id="filterSelect" onchange="filterTable(this.value)">
+                <option value="all">Semua</option>
+                <option value="gambling">Promosi Judi Online</option>
+                <option value="clean">Non-Promosi Judi Online</option>
+            </select>
+        </div>
+    </div>
+    <button onclick="exportTableToCSV('dataset_komentar.csv')" class="btn-primary"
+        style="padding: 0.5rem 1rem; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Export CSV
+    </button>
+    {% else %}
     <h2>Detail Komentar</h2>
     <div class="filter-group">
         <label for="filterSelect">Filter:</label>
@@ -102,6 +106,7 @@
             <option value="clean">Non-Promosi Judi Online</option>
         </select>
     </div>
+    {% endif %}
 </div>
 
 <div class="table-responsive fade-in">
@@ -109,11 +114,13 @@
         <table class="results-table" id="commentsTable">
             <thead>
                 <tr>
-                    {% if oauth_ok %}
+                    {% if oauth_ok and not is_dataset_view %}
                     <th style="width: 40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleAll(this)">
                     </th>
                     {% else %}
+                    {% if not is_dataset_view %}
                     <th style="width: 40px;"></th>
+                    {% endif %}
                     {% endif %}
                     <th>Username</th>
                     <th>Komentar</th>
@@ -124,13 +131,18 @@
             </thead>
             <tbody id="resultsBody">
                 {% for r in rows %}
-                <tr class="comment-row" data-type="{{ r.label|yesno:'gambling,clean' }}">
-                    <td>
+                <tr class="comment-row" data-type="{{ r.label|yesno:'gambling,clean' }}" data-text="{{ r.text }}"
+                    style="cursor: pointer;" hx-post="{% url 'comment_detail' %}"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    hx-vals='js:{text: event.currentTarget.dataset.text}' hx-target="body" hx-swap="beforeend">
+                    {% if not is_dataset_view %}
+                    <td onclick="event.stopPropagation()">
                         {% if oauth_ok %}
                         <input type="checkbox" name="comment_id" value="{{ r.comment_id }}" class="row-checkbox"
                             onchange="updateFab()" {% if r.label %}checked{% endif %}>
                         {% endif %}
                     </td>
+                    {% endif %}
                     <td style="font-weight:500;">{{ r.author }}</td>
                     <td style="max-width:300px;" title="{{ r.text }}">{{ r.text|truncatechars:100 }}</td>
                     <td>

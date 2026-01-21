@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- ===== HEADER INFORMASI CHANNEL (USER) ===== -->
+<div style="display: flex; justify-content: center; width: 100%;">
+    <div class="channel-header-container fade-in">
+        <div class="channel-header-content">
+            <!-- Left: Avatar -->
+            <div class="channel-avatar-section">
+                {% if yt_user.avatar %}
+                <img src="{{ yt_user.avatar }}" alt="{{ yt_user.name }}" class="channel-avatar-img">
+                {% else %}
+                <div class="channel-avatar-placeholder">
+                    {{ yt_user.name|first }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right: Info & Stats -->
+            <div class="channel-info-section">
+                <!-- Name & Handle -->
+                <div class="channel-identity">
+                    <h1 class="channel-name">{{ yt_user.name }}</h1>
+                    <span class="channel-handle">
+                        {% if yt_user.handle %}{{ yt_user.handle }}{% endif %}
+                    </span>
+                </div>
+
+                <!-- Stats: Horizontal Layout -->
+                <div class="channel-stats-row">
+                    <!-- Subscribers -->
+                    <div class="channel-stat-item">
+                        <div class="stat-icon-wrapper">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                        </div>
+                        <div class="stat-text">
+                            <span class="stat-label">Subscribers</span>
+                            <span class="stat-value">{{ yt_user.subscribers|default:"0" }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Videos -->
+                    <div class="channel-stat-item">
+                        <div class="stat-icon-wrapper video-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="m22 8-6 4 6 4V8Z" />
+                                <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
+                            </svg>
+                        </div>
+                        <div class="stat-text">
+                            <span class="stat-label">Videos</span>
+                            <span class="stat-value">{{ yt_user.videos|default:"0" }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Views -->
+                    <div class="channel-stat-item">
+                        <div class="stat-icon-wrapper view-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </div>
+                        <div class="stat-text">
+                            <span class="stat-label">Total Views</span>
+                            <span class="stat-value">{{ yt_user.views|default:"0" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== VIDEO DASHBOARD SECTION ===== -->
+<div class="my-videos-container">
+
+    <div class="video-header">
+        <h2>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                <line x1="7" y1="2" x2="7" y2="22"></line>
+                <line x1="17" y1="2" x2="17" y2="22"></line>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+            </svg>
+            Video Saya
+        </h2>
+        <div class="video-filter">
+            <select name="date_filter" id="dateFilterSelect">
+                <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Hari Ini</option>
+                <option value="1week" {% if date_filter == '1week' %}selected{% endif %}>1 Minggu Terakhir</option>
+                <option value="1month" {% if date_filter == '1month' %}selected{% endif %}>1 Bulan Terakhir</option>
+                <option value="6months" {% if date_filter == '6months' %}selected{% endif %}>6 Bulan Terakhir</option>
+                <option value="12months" {% if date_filter == '12months' %}selected{% endif %}>12 Bulan Terakhir</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Grid Video -->
+    <div class="video-grid" id="videoGridContent">
+        {% for video in my_videos %}
+        <div class="video-card">
+            <div class="video-thumbnail">
+                <img src="{{ video.thumbnail }}" alt="{{ video.title }}" loading="lazy">
+                <div class="play-overlay">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                        <path d="M8 5v14l11-7z"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="video-info">
+                <div>
+                    <h3 class="video-title" title="{{ video.title }}">{{ video.title }}</h3>
+                    <p class="video-meta">{{ video.published_at|slice:":10" }}</p>
+                </div>
+                <button class="btn-card-analyze"
+                    onclick="window.analyzeVideo('https://www.youtube.com/watch?v={{ video.id }}')">
+                    Deteksi
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+            <p>Tidak ada video ditemukan untuk filter ini.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<!-- Loading State -->
+<div class="loading-state htmx-indicator" id="loadingState">
+    <div class="spinner"></div>
+    <p>Sedang mengambil komentar, melakukan preprocessing, dan prediksi...</p>
+</div>
+
+
+<!-- Form  -->
+<form id="hiddenAnalysisForm" hx-post="{% url 'index' %}" hx-target="#resultsContainer" hx-indicator="#loadingState"
+    hx-swap="innerHTML" class="hidden">
+    {% csrf_token %}
+    <input type="hidden" name="url" id="hiddenUrlInput">
+    <input type="hidden" name="limit" value="100"> 
+</form>
+
+<div class="results-section" id="resultsContainer">
+    <!-- Results  -->
+</div>
+
+<!-- ===== FAB MODERASI ===== -->
+<div class="fab-container hidden" id="fabContainer">
+    <button class="fab-btn" id="fabBtn" onclick="openModerationModal()">
+        Moderasi Komentar Terpilih (<span id="fabCount">0</span>)
+    </button>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay hidden" id="moderationModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2>Konfirmasi Moderasi</h2>
+        </div>
+        <div class="modal-body">
+            <p>Anda akan menghapus <span id="modCountText">0</span> komentar yang dipilih.</p>
+            <div class="checkbox-group">
+                <input type="checkbox" id="blockUserCheckbox" name="block_user" value="1">
+                <label for="blockUserCheckbox">Blokir pengguna</label>
+            </div>
+        </div>
+        <div class="modal-footer row">
+            <button class="btn-cancel" onclick="closeModerationModal()">Batal</button>
+            <button class="btn-confirm" id="confirmModerationBtn">Lanjutkan</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay hidden" id="errorModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2 style="color: #ef4444;">Gagal Moderasi</h2>
+        </div>
+        <div class="modal-body">
+            <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+                <img src="{% static 'assets/image/forbidden.svg' %}" alt="Forbidden" width="64" height="64"
+                    style="object-fit: contain;">
+                <p id="errorModalMsg" style="font-size: 1.1rem; color: #333;">Terjadi kesalahan.</p>
+            </div>
+        </div>
+        <div class="modal-footer row" style="justify-content: center;">
+            <button class="btn-cancel" onclick="closeErrorModal()" style="width: 100%;">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay hidden" id="successModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2 style="color: #16a34a;">Berhasil!</h2>
+        </div>
+        <div class="modal-body">
+            <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <p id="successModalMsg" style="font-size: 1.1rem; color: #333;">Aksi berhasil dilakukan.</p>
+            </div>
+        </div>
+        <div class="modal-footer row" style="justify-content: center;">
+            <button class="btn-confirm" onclick="closeSuccessModal()"
+                style="width: 100%; background-color: #16a34a; border-color: #16a34a;">OK</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay hidden" id="loginRequiredModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2>Login Diperlukan</h2>
+        </div>
+        <div class="modal-body">
+            <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;">
+                <img src="{% static 'assets/image/warning.svg' %}" alt="Warning" width="64" height="64"
+                    style="object-fit: contain;">
+                <p style="font-size: 1.1rem; color: #333; font-weight: 500;">Harap login YouTube terlebih dahulu</p>
+                <p style="font-size: 0.9rem; color: #6b7280;">Untuk melakukan moderasi komentar, Anda perlu login dengan
+                    akun
+                    YouTube terlebih dahulu.</p>
+            </div>
+        </div>
+        <div class="modal-footer row" style="justify-content: center;">
+            <button class="btn-cancel" onclick="closeLoginRequiredModal()" style="width: 100%;">Tutup</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (typeof initMain === 'function') {
+            initMain({
+                csrfToken: '{{ csrf_token }}',
+                moderateUrl: "{% url 'moderate_comments' %}"
+            });
+        }
+
+        const dateFilterSelect = document.getElementById('dateFilterSelect');
+        if (dateFilterSelect) {
+            dateFilterSelect.addEventListener('change', function () {
+                window.location.href = "{% url 'video_saya' %}?date_filter=" + this.value;
+            });
+        }
+    });
+
+    window.analyzeVideo = function (url) {
+        const urlInput = document.getElementById('hiddenUrlInput');
+        const form = document.getElementById('hiddenAnalysisForm');
+        const resultsContainer = document.getElementById('resultsContainer');
+
+        if (urlInput && form) {
+            urlInput.value = url;
+
+            if (resultsContainer) {
+                resultsContainer.innerHTML = ''; 
+                resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            htmx.trigger(form, 'submit');
+        }
+    };
+</script>
+{% endblock %}

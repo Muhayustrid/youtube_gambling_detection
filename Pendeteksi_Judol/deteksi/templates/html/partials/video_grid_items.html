@@ -1,0 +1,38 @@
+{% for video in my_videos %}
+<div class="video-card">
+    <div class="video-thumbnail">
+        <img src="{{ video.thumbnail }}" alt="{{ video.title }}" loading="lazy">
+        <div class="play-overlay">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <path d="M8 5v14l11-7z"></path>
+            </svg>
+        </div>
+    </div>
+    <div class="video-info">
+        <div>
+            <h3 class="video-title" title="{{ video.title }}">{{ video.title }}</h3>
+            <p class="video-meta">{{ video.published_at|slice:":10" }}</p>
+        </div>
+        <button class="btn-card-analyze"
+            onclick="window.analyzeVideo('https://www.youtube.com/watch?v={{ video.id }}')">
+            Deteksi
+        </button>
+    </div>
+</div>
+{% endfor %}
+
+{% if next_page_token %}
+<div id="load-more-container" hx-swap-oob="true">
+    <div style="text-align: center; margin-top: 2rem; width: 100%;">
+        <button class="btn-confirm" hx-get="{% url 'my_videos_paginated' %}?page_token={{ next_page_token }}"
+            hx-target="#videoGridContent" hx-swap="beforeend" hx-indicator="#loadingMoreVideos"
+            style="background: white; color: var(--text-primary); border: 1px solid var(--border-color);">
+            Muat Lebih Banyak
+        </button>
+        <div id="loadingMoreVideos" class="htmx-indicator spinner"
+            style="width:24px; height:24px; display:inline-block; vertical-align:middle; margin-left:10px;"></div>
+    </div>
+</div>
+{% else %}
+<div id="load-more-container" hx-swap-oob="true"></div>
+{% endif %}

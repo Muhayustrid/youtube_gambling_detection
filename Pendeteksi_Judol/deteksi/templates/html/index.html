@@ -66,37 +66,7 @@
 <!-- ===== END FORM ANALISIS ===== -->
 
 <!-- ===== VIDEO ANDA SECTION (OUTSIDE FORM) ===== -->
-{% if oauth_ok and my_videos %}
-<div class="my-videos-container">
-  <div class="video-header">
-    <h2>
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
-        <line x1="7" y1="2" x2="7" y2="22"></line>
-        <line x1="17" y1="2" x2="17" y2="22"></line>
-        <line x1="2" y1="12" x2="22" y2="12"></line>
-      </svg>
-      Video Terbaru Anda
-    </h2>
-    <div class="video-filter">
-      <select name="limit" hx-get="{% url 'my_videos_partial' %}" hx-target="#myVideosGrid"
-        hx-indicator="#loadingVideoGrid">
-        <option value="6" selected>6 Video</option>
-        <option value="12">12 Video</option>
-        <option value="24">24 Video</option>
-      </select>
-    </div>
-  </div>
 
-  <div id="loadingVideoGrid" class="htmx-indicator" style="text-align: center; padding: 1rem;">
-    <div class="spinner" style="width: 24px; height: 24px; margin: 0 auto;"></div>
-  </div>
-
-  <div class="video-grid" id="myVideosGrid">
-    {% include 'html/partials/video_grid.html' %}
-  </div>
-</div>
-{% endif %}
 <!-- ===== END VIDEO ANDA SECTION ===== -->
 
 <!-- ===== LOADING STATE ===== -->
@@ -216,7 +186,6 @@
 {% block script %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    // Initialize main.js logic with Django context
     if (typeof initMain === 'function') {
       initMain({
         csrfToken: '{{ csrf_token }}',

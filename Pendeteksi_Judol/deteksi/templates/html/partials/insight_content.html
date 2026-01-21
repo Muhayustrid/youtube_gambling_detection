@@ -1,0 +1,41 @@
+{% load markdownify %}
+<div class="ai-insight-box fade-in">
+    <div class="insight-header" onclick="toggleInsight()" role="button" tabindex="0" aria-expanded="true"
+        aria-controls="insightContent">
+        <div class="insight-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="sparkle-icon">
+                <path
+                    d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+            </svg>
+            <h3>AI Insight</h3>
+            <button type="button" class="insight-toggle-btn" id="insightToggleBtn" aria-label="Toggle AI Insight">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" class="chevron-icon">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div class="insight-content" id="insightContent">
+        {{ llm_insight|markdownify }}
+    </div>
+</div>
+
+<script>
+    window.toggleInsight = function () {
+        const content = document.getElementById('insightContent');
+        const toggleBtn = document.getElementById('insightToggleBtn');
+        const header = document.querySelector('.insight-header');
+
+        if (content && content.classList.contains('collapsed')) {
+            content.classList.remove('collapsed');
+            if (toggleBtn) toggleBtn.classList.remove('rotated');
+            if (header) header.setAttribute('aria-expanded', 'true');
+        } else if (content) {
+            content.classList.add('collapsed');
+            if (toggleBtn) toggleBtn.classList.add('rotated');
+            if (header) header.setAttribute('aria-expanded', 'false');
+        }
+    };
+</script>
