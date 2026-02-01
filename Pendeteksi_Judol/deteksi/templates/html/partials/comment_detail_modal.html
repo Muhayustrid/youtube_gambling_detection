@@ -1,10 +1,10 @@
 <div id="detailModalOverlay" class="modal-overlay" _="on click if target is me remove me"
     onclick="if(event.target === this) this.remove()">
-    <div class="modal-container" style="max-width: 900px; width: 95%;">
+    <div class="modal-container" style="max-width: 900px; width: 95%; max-height: 90vh; overflow: hidden;">
 
         <!-- Header -->
         <div class="modal-header"
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding: 0 1rem;">
             <h2 style="margin: 0; text-align: left; font-size: 1.25rem;">Detail Prediksi & Koefisien</h2>
             <button type="button" class="close-btn" onclick="document.getElementById('detailModalOverlay').remove()"
                 style="background:none; border:none; cursor:pointer; color:var(--text-secondary);">
@@ -16,12 +16,12 @@
         </div>
 
         <!-- Body -->
-        <div class="modal-body" style="text-align: left; display: block;">
+        <div class="modal-body" style="text-align: left; display: block; padding: 0 1rem; overflow-y: auto; max-height: calc(90vh - 120px);">
 
             <!-- Comment Box -->
             <div
                 style="background: #f9fafb; padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
-                <p style="margin: 0; color: var(--text-primary); white-space: pre-wrap;">{{ text }}</p>
+                <p style="margin: 0; color: var(--text-primary); white-space: pre-wrap; word-wrap: break-word;">{{ text }}</p>
             </div>
 
             <!-- Stats Grid -->
@@ -61,29 +61,29 @@
 
                 <div class="table-responsive"
                     style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
-                    <table class="results-table" style="font-size: 0.9rem; border: none;">
+                    <table class="results-table" style="font-size: 0.9rem; border: none; width: 100%;">
                         <thead style="position: sticky; top: 0; z-index: 10;">
                             <tr>
-                                <th style="background: #f9fafb;">Fitur</th>
-                                <th style="background: #f9fafb; text-align: right;">TF-IDF</th>
-                                <th style="background: #f9fafb; text-align: right;">Koefisien</th>
-                                <th style="background: #f9fafb; text-align: right;">Kontribusi</th>
-                                <th style="background: #f9fafb;">Arah</th>
+                                <th style="background: #f9fafb; min-width: 200px;">Fitur</th>
+                                <th style="background: #f9fafb; text-align: right; min-width: 100px;">TF-IDF</th>
+                                <th style="background: #f9fafb; text-align: right; min-width: 100px;">Koefisien</th>
+                                <th style="background: #f9fafb; text-align: right; min-width: 100px;">Kontribusi</th>
+                                <th style="background: #f9fafb; min-width: 120px;">Arah</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for feat in features %}
                             <tr>
-                                <td>
+                                <td style="word-break: break-word; max-width: 200px;">
                                     <span
-                                        style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-family: monospace;">
+                                        style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-family: monospace; display: inline-block; max-width: 100%; overflow-wrap: break-word;">
                                         {{ feat.feature }}
                                     </span>
                                 </td>
-                                <td style="text-align: right;">{{ feat.tfidf|floatformat:4 }}</td>
-                                <td style="text-align: right;">{{ feat.coefficient|floatformat:4 }}</td>
+                                <td style="text-align: right; white-space: nowrap;">{{ feat.tfidf|floatformat:4 }}</td>
+                                <td style="text-align: right; white-space: nowrap;">{{ feat.coefficient|floatformat:4 }}</td>
                                 <td
-                                    style="text-align: right; font-weight: 500; color: {% if feat.contribution > 0 %}var(--danger-color){% else %}var(--success-color){% endif %};">
+                                    style="text-align: right; font-weight: 500; color: {% if feat.contribution > 0 %}var(--danger-color){% else %}var(--success-color){% endif %}; white-space: nowrap;">
                                     {{ feat.contribution|floatformat:4 }}
                                 </td>
                                 <td>
